@@ -1,0 +1,27 @@
+#include <windows.h>
+
+1 VERSIONINFO
+FILEVERSION 0,0,1,0
+PRODUCTVERSION 0,0,1,0
+FILETYPE VFT_DLL
+{
+	BLOCK "StringFileInfo"
+	{
+		BLOCK "080904E4"
+		{
+		VALUE "CompanyName", "Ferry ""Wyz"" Timmers"
+		VALUE "FileVersion", "alpha 1"
+		VALUE "FileDescription", "Sockets plugin for Adventure Game Studio"
+		VALUE "InternalName", "agsSock"
+		VALUE "LegalCopyright", "Copyright (c) 2017 Ferry Timmers"
+		VALUE "LegalTrademarks", "AGS by Chris Jones"
+		VALUE "OriginalFilename", "agsSock.dll"
+		VALUE "ProductName", "AGS Sock"
+		VALUE "ProductVersion", "alpha"
+		}
+	}
+	BLOCK "VarFileInfo"
+	{
+		VALUE "Translation", 0x0809, 1252
+	}
+}
