@@ -23,3 +23,9 @@ if(MINGW OR MSYS)
 	# Remove lib- prefix when compiling with MinGW
 	set_target_properties(agssock PROPERTIES PREFIX "")
 endif()
+
+# Tests
+enable_testing()
+
+add_executable(test-buffer test/buffer.cpp test/Test.cpp)
+add_test(Socket_buffer test-buffer)

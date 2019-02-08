@@ -157,10 +157,10 @@ void Run()
 				
 				if (ret == SOCKET_ERROR)
 					(*it)->incoming.error = error;
-				else if ((ret > 0) && (*it)->protocol == IPPROTO_TCP)
-					(*it)->incoming.append(string(buffer, ret));
+				else if ((*it)->protocol == IPPROTO_TCP)
+					(*it)->incoming.append(buffer, ret);
 				else
-					(*it)->incoming.push(string(buffer, ret));
+					(*it)->incoming.push(buffer, ret);
 				
 				if ((ret == SOCKET_ERROR)
 				|| (!ret && (*it)->protocol == IPPROTO_TCP))
@@ -667,6 +667,11 @@ const char *Socket_Recv(Socket *sock)
 	poollock->unlock();
 	
 	sock->error = 0;
+	// An empty string indicates 'end of stream' but an input starting with a
+	// zero-character false-triggers this; we still close the socket in this
+	// case. NB: the `RecvData` function does not have this limitation. So,
+	// in case a protocol may send zero-characters point users to the
+	// `RecvData` function. However, most protocols do not.
 	if (!str.size() && sock->protocol == IPPROTO_TCP)
 	{
 		// TCP socket was closed, invalidate it.
