@@ -9,6 +9,7 @@ add_library(agssock SHARED
 	src/SockAddr.cpp
 	src/Buffer.cpp
 	src/SockData.cpp
+	src/Pool.cpp
 	res/agssock.rc
 )
 target_compile_definitions(agssock PRIVATE THIS_IS_THE_PLUGIN=1)

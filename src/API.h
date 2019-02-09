@@ -39,6 +39,9 @@
 	#ifndef _WINDOWS_
 		#define _WINDOWS_
 	#endif
+
+	#define WOULD_BLOCK(x) ((x) == WSAEWOULDBLOCK)
+	#define GET_ERROR() WSAGetLastError()
 #else
 	#include <fcntl.h>
 	#include <unistd.h>
@@ -56,6 +59,8 @@
 	#define SD_RECEIVE SHUT_RD
 	#define SD_SEND SHUT_WR
 	#define SD_BOTH SHUT_RDWR
+	#define WOULD_BLOCK(x) ((x) == EAGAIN || (x) == EWOULDBLOCK)
+	#define GET_ERROR() errno
 #endif
 
 int setblocking(SOCKET sock, bool state);
@@ -65,6 +70,8 @@ int setblocking(SOCKET sock, bool state);
 #endif
 
 //------------------------------------------------------------------------------
+
+#include <functional>
 
 #include "agsplugin.h"
 
@@ -134,6 +141,19 @@ class Mutex
 	void lock() { pthread_mutex_lock(&mutex); }
 	void unlock() { pthread_mutex_unlock(&mutex); }
 #endif
+
+	//! Scope based lock for a Mutex object
+	class Lock
+	{
+		Mutex &mutex_;
+
+		public:
+		Lock(Mutex &mutex) : mutex_(mutex) { mutex_.lock(); }
+		~Lock() { mutex_.unlock(); }
+
+		Lock(const Lock &) = delete;
+		void operator =(const Lock &) = delete;
+	};
 };
 
 //------------------------------------------------------------------------------
@@ -142,7 +162,7 @@ class Mutex
 class Thread
 {
 	public:
-	typedef void (*Callback)(void); //!< Asynchronously executed function type
+	using Callback = std::function<void()>; //!< Asynchronously executed function type
 	
 	Thread(Callback); //!< Initializes the thread
 	~Thread();        //!< Waits for the thread to finish and cleans up after
