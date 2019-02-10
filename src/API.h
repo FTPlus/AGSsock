@@ -125,10 +125,10 @@ void Terminate();  //!< Cleans up the API
 //! Mutual exclusion class
 class Mutex
 {
-	public:
 #ifdef _WIN32
 	CRITICAL_SECTION cs;
 	
+	public:
 	Mutex() { InitializeCriticalSection(&cs); }  //!< Initializes the mutex
 	~Mutex() { DeleteCriticalSection(&cs); }     //!< Cleans after the mutex
 	void lock() { EnterCriticalSection(&cs); }   //!< Acquire mutual exclusion
@@ -136,6 +136,7 @@ class Mutex
 #else
 	pthread_mutex_t mutex;
 	
+	public:
 	Mutex() { pthread_mutex_init(&mutex, NULL); }
 	~Mutex() { pthread_mutex_destroy(&mutex); }
 	void lock() { pthread_mutex_lock(&mutex); }
@@ -154,6 +155,9 @@ class Mutex
 		Lock(const Lock &) = delete;
 		void operator =(const Lock &) = delete;
 	};
+
+	Mutex(const Mutex &) = delete;
+	void operator =(const Mutex &) = delete;
 };
 
 //------------------------------------------------------------------------------
@@ -172,6 +176,9 @@ class Thread
 	bool active();    //!< Returns whether concurrent execution is active
 	
 	void exit();    //!< Call this before in the callback function before return.
+
+	Thread(const Thread &) = delete;
+	void operator =(const Thread &) = delete;
 	
 	private:
 	struct Data;
@@ -182,12 +189,15 @@ class Thread
 
 //------------------------------------------------------------------------------
 
+//! Inter-thread signalling class
 class Beacon
 {
 	public:
 	Beacon();
 	~Beacon();
 	
+	//! Presents a socket to the listening party which can be signalled to
+	//! \note The socket remains valid at least until it was signalled
 	operator SOCKET()
 	{
 		#ifdef _WIN32
@@ -197,11 +207,14 @@ class Beacon
 		#endif
 	}
 	
-	void reset();
-	void signal();
+	void reset();  //!< Resets the beacon after use for re-use
+	void signal(); //!< Signals the listening party
+
+	Beacon(const Beacon &) = delete;
+	void operator =(const Beacon &) = delete;
 	
 	private:
-	struct
+	struct Data
 	{
 		#ifdef _WIN32
 			SOCKET fd;

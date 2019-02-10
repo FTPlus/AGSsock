@@ -3,7 +3,7 @@
  *******************************************************/
 
 #ifdef NDEBUG
-	#define DEBUG_P(x) ((void *) 0)
+	#define DEBUG_P(x) ((void) 0)
 #else
 	#include <cstdio>
 	#define DEBUG_P(x) std::puts("\t\t" x);
