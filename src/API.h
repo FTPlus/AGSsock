@@ -50,6 +50,7 @@
 	#include <arpa/inet.h>
 	#include <netdb.h>
 	#include <pthread.h>
+	#include <time.h>
 	
 	#define SOCKET int
 	#define SOCKET_ERROR -1

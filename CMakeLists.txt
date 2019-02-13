@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
+include(CheckSymbolExists)
+
 project("AGS Sockets")
 
 add_library(agssock SHARED
@@ -23,6 +25,11 @@ endif()
 if(MINGW OR MSYS)
 	# Remove lib- prefix when compiling with MinGW
 	set_target_properties(agssock PROPERTIES PREFIX "")
+endif()
+
+if(NOT WIN32)
+	check_symbol_exists("pthread_timedjoin_np" "pthread.h" HAVE_TIMEDJOIN)
+	add_definitions(HAVE_TIMEDJOIN)
 endif()
 
 # Tests

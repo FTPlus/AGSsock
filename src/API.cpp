@@ -84,12 +84,26 @@ Thread::~Thread()
 
 	if (active())
 	{
+		// Wait for the thread to terminate, or after 2 seconds, exterminate!
 	#ifdef _WIN32
 		if (WaitForSingleObject(data->handle, 2000) != WAIT_OBJECT_0)
 			TerminateThread(data->handle, 0);
 		
 		CloseHandle(data->handle);
+	#elif HAVE_TIMEDJOIN
+		timespec ts;
+		if (!clock_gettime(CLOCK_REALTIME, &ts))
+			pthread_cancel(data->thread);
+		else
+		{
+			ts.tv_sec += 2;
+			if (!pthread_timedjoin_np(data->thread, nullptr, &ts))
+				pthread_cancel(data->thread);
+		}
 	#else
+		// We do not have a timed join function, instead
+		// simply terminate the thread immediately.
+		pthread_cancel(data->thread);
 	#endif
 	}
 
@@ -259,8 +273,8 @@ void Beacon::signal()
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
 {
 	if (getnameinfo((const sockaddr *) src, sizeof (SOCKADDR_STORAGE),
-		dst, size, NULL, 0, NI_NUMERICHOST))
-		return NULL;
+		dst, size, nullptr, 0, NI_NUMERICHOST))
+		return nullptr;
 	else
 		return dst;
 }
