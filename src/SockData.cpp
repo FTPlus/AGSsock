@@ -36,7 +36,16 @@ SockData *SockData_Create(long size, long byte)
 {
 	SockData *data = new SockData(size, byte);
 	AGS_OBJECT(SockData, data);
-	return (SockData *) data;
+	return data;
+}
+
+//------------------------------------------------------------------------------
+
+SockData *SockData_CreateEmpty()
+{
+	SockData *data = new SockData();
+	AGS_OBJECT(SockData, data);
+	return data;
 }
 
 //------------------------------------------------------------------------------
@@ -84,6 +93,12 @@ const char *SockData_AsString(SockData *sd)
 }
 
 //------------------------------------------------------------------------------
+
+void SockData_Clear(SockData *sd)
+{
+	sd->data.clear();
+}
+
 //------------------------------------------------------------------------------
 
 } /* namespace AGSSock */

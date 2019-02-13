@@ -215,6 +215,15 @@ void SockAddr_set_IP(SockAddr *sa, const char *ip)
 }
 
 //------------------------------------------------------------------------------
+
+SockData *SockAddr_GetData(SockAddr *sa)
+{
+	SockData *data = new SockData();
+	AGS_OBJECT(SockData, data);
+	data->data = std::string((char *) sa, sizeof (SockAddr));
+	return (SockData *) data;
+}
+
 //------------------------------------------------------------------------------
 
 } /* namespace AGSSock */

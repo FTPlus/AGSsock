@@ -40,6 +40,8 @@ void SockAddr_set_Address(SockAddr *, const char *);
 const char *SockAddr_get_IP(SockAddr *);
 void SockAddr_set_IP(SockAddr *, const char *);
 
+SockData *SockAddr_GetData(SockAddr *);
+
 //------------------------------------------------------------------------------
 
 } /* namespace AGSSock */
@@ -68,6 +70,9 @@ void SockAddr_set_IP(SockAddr *, const char *);
 	"  import attribute int Port;\r\n" \
 	"  import attribute String Address;\r\n" \
 	"  import attribute String IP;\r\n" \
+	"  \r\n" \
+	"  /// Returns a SockData object that contains the raw data of the socket address. (advanced)\r\n" \
+	"  import SockData *GetData()\r\n" \
 	"};\r\n" \
 	"\r\n"
 
@@ -80,7 +85,8 @@ void SockAddr_set_IP(SockAddr *, const char *);
 	AGS_METHOD(SockAddr, CreateIPv6, 2)          \
 	AGS_MEMBER(SockAddr, Port)                   \
 	AGS_MEMBER(SockAddr, Address)                \
-	AGS_MEMBER(SockAddr, IP)
+	AGS_MEMBER(SockAddr, IP)                     \
+	AGS_METHOD(SockAddr, GetData, 0)
 
 //------------------------------------------------------------------------------
 
