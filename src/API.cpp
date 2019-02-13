@@ -90,8 +90,6 @@ Thread::~Thread()
 		
 		CloseHandle(data->handle);
 	#else
-		// Todo: add a timeout in the future, using conditional varaibles
-		pthread_join(data->thread, nullptr);
 	#endif
 	}
 
@@ -206,7 +204,6 @@ Beacon::Beacon()
 	setblocking(data.fd[0], false);
 	setblocking(data.fd[1], false);
 #endif
-	// Todo: add error handling
 }
 
 //------------------------------------------------------------------------------
@@ -320,9 +317,4 @@ int setblocking(SOCKET sock, bool state)
 #endif
 }
 
-//------------------------------------------------------------------------------
-/*
-	Todo:
-		1. Error constants to AGS?
-*/
 //..............................................................................

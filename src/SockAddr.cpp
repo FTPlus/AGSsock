@@ -215,20 +215,6 @@ void SockAddr_set_IP(SockAddr *sa, const char *ip)
 }
 
 //------------------------------------------------------------------------------
-/*
-	Done for now.
-	
-	Still to do:
-		1. Test IPv6 support
-		2. See if get address works with unusual ports -- DONE!
-		3. Test DNS (rev)lookups also with different ports
-		4. Test if IPs are always generated
-		5. Same for port-numbers
-		6. Test custom data addresses
-		7. Add a way to turn into SockData ('AsData'?)
-		8. Test (un)serialization
-		9. Documentation
-*/
 //------------------------------------------------------------------------------
 
 } /* namespace AGSSock */

@@ -118,7 +118,9 @@ void Pool::run()
 	
 	} /* event loop */
 	
-	// Todo: chain the two critical sections for efficiency (one loop)
+	// Note: chaining the two critical sections might be more efficient as it
+	// merges the loops, but this is not worth the hassle and might introduce
+	// errors.
 	
 	DEBUG_P("Thread cancelled");
 	thread_.exit();

@@ -7,19 +7,6 @@
 #include "Pool.h"
 #include "Socket.h"
 
-/*
- * Todo: (walkthrough)
- *   1. add/remove to pool -- done
- *   2. block/nonblocking -- done
- *   3. local/remote address -- will err invalidate?
- *   4. buffer + mutex -- done
- *   5. sock valid
- *   6. aborting the plugin -- done
- *   7. invalidating sockets (should always remove from pool, see invar II)
- *   8. va style Send?
- *   9. Make string params const in ags header?
- */
-
 namespace AGSSock {
 
 using namespace AGSSockAPI;
