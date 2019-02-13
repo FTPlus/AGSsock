@@ -19,7 +19,7 @@ Pool *pool;
 
 void Initialize()
 {
-	pool = new Pool;
+	pool = new Pool();
 }
 
 void Terminate()
@@ -381,19 +381,21 @@ void Socket_Close(Socket *sock)
 }
 
 //==============================================================================
+
 // Send is nonblocking:
 // If it returns 0 and the error is also 0: try again!
-long Socket_Send(Socket *sock, const char *str)
+
+inline long send_impl(Socket *sock, const char *buf, size_t count)
 {
-	long len = strlen(str);
 	long ret = 0;
 	
-	while (len > 0)
+	while (count > 0)
 	{
-		if ((ret = send(sock->id, str, len, 0)) == SOCKET_ERROR)
+		ret = send(sock->id, buf, count, 0);
+		if (ret == SOCKET_ERROR)
 			break;
-		str += ret;
-		len -= ret;
+		buf += ret;
+		count -= ret;
 	}
 	
 	sock->error = GET_ERROR();
@@ -403,34 +405,104 @@ long Socket_Send(Socket *sock, const char *str)
 	return (ret == SOCKET_ERROR ? 0 : 1);
 }
 
+long Socket_Send(Socket *sock, const char *str)
+{
+	return send_impl(sock, str, strlen(str));
+}
+
+long Socket_SendData(Socket *sock, const SockData *data)
+{
+	return send_impl(sock, data->data.data(), data->data.size());
+}
+
 //------------------------------------------------------------------------------
+
+inline long sendto_impl(Socket *sock, const SockAddr *addr,
+	const char *buf, size_t count)
+{
+	long ret = 0;
+	
+	while (count > 0)
+	{
+		ret = sendto(sock->id, buf, count, 0,
+			(sockaddr *) addr, sizeof (SockAddr));
+		if (ret == SOCKET_ERROR)
+			break;
+		buf += ret;
+		count -= ret;
+	}
+	
+	sock->error = GET_ERROR();
+	if (WOULD_BLOCK(sock->error))
+		sock->error = 0;
+	
+	return (ret == SOCKET_ERROR ? 0 : 1);
+}
 
 long Socket_SendTo(Socket *sock, const SockAddr *addr, const char *str)
 {
-	long len = strlen(str);
-	long ret = 0;
-	
-	while (len > 0)
-	{
-		if ((ret = sendto(sock->id, str, len, 0,
-			(sockaddr *) addr, sizeof (SockAddr))) == SOCKET_ERROR)
-			break;
-		str += ret;
-		len -= ret;
-	}
-	
-	sock->error = GET_ERROR();
-	if (WOULD_BLOCK(sock->error))
-		sock->error = 0;
-	
-	return (ret == SOCKET_ERROR ? 0 : 1);
+	return sendto_impl(sock, addr, str, strlen(str));
+}
+
+long Socket_SendDataTo(Socket *sock, const SockAddr *addr, const SockData *data)
+{
+	return sendto_impl(sock, addr, data->data.data(), data->data.size());
 }
 
 //------------------------------------------------------------------------------
 
-const char *Socket_Recv(Socket *sock)
+// Receives and removes a chunk of data from a buffer and returns it
+// Comes in a AGS String and SockData flavour
+template <typename T> inline T *recv_extract(Buffer &buffer, bool stream);
+
+template <> inline const char *recv_extract(Buffer &buffer, bool stream)
 {
-	string str;
+	// Get a truncated (zero terminated) version of the received data.
+	const char *data = AGS_STRING(buffer.front().c_str());
+
+	// If the connection is streaming we clear the buffer till the first
+	// zero-character; otherwise we are dealing with packets: we remove the
+	// current packet from the buffer.
+	if (stream)
+		buffer.extract();
+	else
+		buffer.pop();
+
+	return data;
+}
+
+template <> inline SockData *recv_extract(Buffer &buffer, bool stream)
+{
+	// For SockData output, we don't have to worry about zero-characters,
+	// thus we receive everything and then clear the buffer.
+	SockData *data = new SockData();
+	AGS_OBJECT(SockData, data);
+	data->data.swap(buffer.front());
+	buffer.pop();
+	return data;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// Returns whether a chunk of data is empty (the empty string) or not
+// Comes in a AGS String and SockData flavour
+template <typename T> inline bool recv_empty(T *data);
+
+template <> inline bool recv_empty(const char *data)
+{
+	return data[0] == '\0';
+}
+
+template <> inline bool recv_empty(SockData *data)
+{
+	return data->data.empty();
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+template <typename T> inline T *recv_impl(Socket *sock)
+{
+	T *data;
 	
 	{
 		Mutex::Lock lock(*pool);
@@ -452,22 +524,12 @@ const char *Socket_Recv(Socket *sock)
 			return nullptr;
 		}
 		
-		// Get a truncated (zero terminated) version of the received data.
-		str = sock->incoming.front().c_str();
-		
-		if (sock->protocol == IPPROTO_TCP)
-			sock->incoming.extract();
-		else
-			sock->incoming.pop();
+		data = recv_extract<T>(sock->incoming, sock->protocol == IPPROTO_TCP);
 	}
 	
 	sock->error = 0;
-	// An empty string indicates 'end of stream' but an input starting with a
-	// zero-character false-triggers this; we still close the socket in this
-	// case. NB: the `RecvData` function does not have this limitation. So,
-	// in case a protocol may send zero-characters point users to the
-	// `RecvData` function. However, most protocols do not.
-	if (!str.size() && sock->protocol == IPPROTO_TCP)
+
+	if (recv_empty(data) && sock->protocol == IPPROTO_TCP)
 	{
 		// TCP socket was closed, invalidate it.
 		closesocket(sock->id);
@@ -475,52 +537,67 @@ const char *Socket_Recv(Socket *sock)
 		// The read loop itself will remove it from the pool
 	}
 	
-	return AGS_STRING(str.c_str());
+	return data;
+}
+
+const char *Socket_Recv(Socket *sock)
+{
+	// An empty string indicates 'end of stream' but an input starting with a
+	// zero-character false-triggers this; we still close the socket in this
+	// case. NB: the `RecvData` function does not have this limitation. So,
+	// in case a protocol may send zero-characters point users to the
+	// `RecvData` function. However, most protocols do not.
+	return recv_impl<const char>(sock);
+}
+
+SockData *Socket_RecvData(Socket *sock)
+{
+	return recv_impl<SockData>(sock);
 }
 
 //------------------------------------------------------------------------------
 
-const char *Socket_RecvFrom(Socket *sock, SockAddr *addr)
+template <typename T> inline T *recvfrom_return(const char *buf, size_t count);
+
+template <> inline const char *recvfrom_return(const char *buf, size_t count)
+{
+	return AGS_STRING(buf);
+}
+
+template <> inline SockData *recvfrom_return(const char *buf, size_t count)
+{
+	SockData *data = new SockData();
+	AGS_OBJECT(SockData, data);
+	data->data = string(buf, count);
+	return data;
+}
+
+//- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+template <typename T> inline T *recvfrom_impl(Socket *sock, SockAddr *addr)
 {
 	char buffer[65536];
+	buffer[sizeof (buffer) - 1] = 0;
+
 	int addrlen = sizeof (SockAddr);
-	long ret = recvfrom(sock->id, buffer, sizeof (buffer), 0,
+	long ret = recvfrom(sock->id, buffer, sizeof (buffer) - 1, 0,
 		(sockaddr *) addr, &addrlen);
 	sock->error = GET_ERROR();
 	
 	if (ret == SOCKET_ERROR)
 		return nullptr;
 	
-	buffer[MIN(ret, sizeof (buffer) - 1)] = 0;
-	return AGS_STRING(buffer);
+	return recvfrom_return<T>(buffer, ret);
 }
 
-//==============================================================================
-
-long Socket_SendData(Socket *, const SockData *)
+const char *Socket_RecvFrom(Socket *sock, SockAddr *addr)
 {
-	return 0; // Todo: implement
+	return recvfrom_impl<const char>(sock, addr);
 }
 
-//------------------------------------------------------------------------------
-
-long Socket_SendDataTo(Socket *, const SockAddr *, const SockData *)
+SockData *Socket_RecvDataFrom(Socket *sock, SockAddr *addr)
 {
-	return 0; // Todo: implement
-}
-
-//------------------------------------------------------------------------------
-
-SockData *Socket_RecvData(Socket *)
-{
-	return nullptr; // Todo: implement
-}
-
-//------------------------------------------------------------------------------
-
-SockData *Socket_RecvDataFrom(Socket *, SockAddr *)
-{
-	return nullptr; // Todo: implement
+	return recvfrom_impl<SockData>(sock, addr);
 }
 
 //==============================================================================

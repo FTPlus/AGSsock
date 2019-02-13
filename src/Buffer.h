@@ -35,7 +35,9 @@ class Buffer
 	
 	Buffer() : error(0) {}
 
-	//! Access teh first element of the buffer
+	//! Access the first element of the buffer
+	inline string &front()
+		{ return queue_.front(); }
 	inline const string &front() const
 		{ return queue_.front(); }
 

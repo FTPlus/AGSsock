@@ -67,13 +67,12 @@ Socket *Socket_Accept(Socket *);
 void Socket_Close(Socket *);
 
 long Socket_Send(Socket *, const char *);
-long Socket_SendTo(Socket *, const SockAddr *, const char *);
-const char *Socket_Recv(Socket *);
-const char *Socket_RecvFrom(Socket *, SockAddr *);
-
 long Socket_SendData(Socket *, const SockData *);
+long Socket_SendTo(Socket *, const SockAddr *, const char *);
 long Socket_SendDataTo(Socket *, const SockAddr *, const SockData *);
+const char *Socket_Recv(Socket *);
 SockData *Socket_RecvData(Socket *);
+const char *Socket_RecvFrom(Socket *, SockAddr *);
 SockData *Socket_RecvDataFrom(Socket *, SockAddr *);
 
 long Socket_GetOption(Socket *, long level, long option);
