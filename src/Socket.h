@@ -18,6 +18,7 @@
 #include "Buffer.h"
 #include "SockAddr.h"
 #include "SockData.h"
+#include "version.h"
 
 //! A BSD sockets wrapper plugin for AGS
 //! \warning Assumes the API has succesfully been initialized.
@@ -85,7 +86,7 @@ void Socket_SetOption(Socket *, long level, long option, long value);
 //------------------------------------------------------------------------------
 
 #define SOCKET_HEADER \
-	"#define AGSSOCK\r\n\r\n" \
+	"#define AGSSOCK " RELEASE_DATE "\r\n\r\n" \
 	"managed struct Socket\r\n" \
 	"{\r\n" \
 	"	/// Creates a socket for the specified protocol. (advanced)\r\n" \

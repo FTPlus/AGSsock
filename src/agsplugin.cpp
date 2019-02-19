@@ -27,6 +27,7 @@
 #include "SockAddr.h"
 #include "Socket.h"
 #include "agsplugin.h"
+#include "version.h"
 
 DLLEXPORT int AGS_PluginV2() { return 1; }
 
@@ -103,8 +104,8 @@ void AGS_EditorShutdown()
 
 void AGS_EditorProperties(HWND parent)
 {
-	MessageBox(parent, "AGS Sockets plugin by Ferry \"Wyz\" Timmers August 2012",
-	           "About", MB_OK | MB_ICONINFORMATION);
+	MessageBox(parent, "AGS Sockets plugin by " AUTHORS "; " RELEASE_DATE_STRING
+		".", "About", MB_OK | MB_ICONINFORMATION);
 }
 
 /*

@@ -2,9 +2,20 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 include(CheckSymbolExists)
 
-project("AGS Sockets")
+project("AGS Sockets" VERSION 0.1.0.0
+	DESCRIPTION "Sockets plugin for Adventure Game Studio")
+set(PROJECT_VERSION_TAG "beta 1")
+#set(PROJECT_VERSION_TAG "${PROJECT_VERSION}")
+set(PROJECT_AUTHOR "Ferry \\x22Wyz\\x22 Timmers")
+set(PROJECT_AUTHORS "${PROJECT_AUTHOR}")
+#set(PROJECT_AUTHORS "${PROJECT_AUTHOR} and ...")
+set(PROJECT)
+set(PROJECT_RELEASE_YEAR 2019)
+set(PROJECT_RELEASE_MONTH 2)
 
-add_library(agssock SHARED
+configure_file(res/version.h.in res/version.h)
+
+add_library(agssock MODULE
 	src/agsplugin.cpp
 	src/Socket.cpp
 	src/API.cpp
@@ -14,6 +25,7 @@ add_library(agssock SHARED
 	src/Pool.cpp
 	res/agssock.rc
 )
+target_include_directories(agssock PUBLIC ${CMAKE_BINARY_DIR}/res)
 target_compile_definitions(agssock PRIVATE THIS_IS_THE_PLUGIN=1)
 target_link_libraries(agssock PRIVATE $<$<PLATFORM_ID:Windows>:ws2_32>)
 

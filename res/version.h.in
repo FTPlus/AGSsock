@@ -1,0 +1,62 @@
+/*******************************************************
+ * Version information -- header file                  *
+ *                                                     *
+ * Author: Ferry "Wyz" Timmers                         *
+ *                                                     *
+ * Date: 12:01 2019-2-19                               *
+ *                                                     *
+ * Description: Global header that includes project    *
+ *              information like the version, author   *
+ *              and date.                              *
+ *******************************************************/
+
+#ifndef _VERSION_H
+#define _VERSION_H
+
+//------------------------------------------------------------------------------
+
+// See CMakeLists.txt for the actual definition of this
+
+#define VERSION "@PROJECT_VERSION@"
+#define VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define VERSION_BUILD @PROJECT_VERSION_TWEAK@
+
+#define VERSION_SEQUENCE VERSION_MAJOR,VERSION_MINOR,VERSION_PATCH,VERSION_BUILD
+#define VERSION_STRING "@PROJECT_VERSION_TAG@"
+
+#define AUTHOR "@PROJECT_AUTHOR@"
+#define AUTHORS "@PROJECT_AUTHORS@"
+#define DESCRIPTION "@PROJECT_DESCRIPTION@"
+
+#if @PROJECT_RELEASE_MONTH@ < 10
+	#define RELEASE_DATE "@PROJECT_RELEASE_YEAR@0@PROJECT_RELEASE_MONTH@"
+#else
+	#define RELEASE_DATE "@PROJECT_RELEASE_YEAR@@PROJECT_RELEASE_MONTH@"
+#endif
+#define RELEASE_YEAR "@PROJECT_RELEASE_YEAR@"
+#define RELEASE_DATE_STRING MONTH_NAME(@PROJECT_RELEASE_MONTH@) " " RELEASE_YEAR
+
+//------------------------------------------------------------------------------
+
+#define MONTH_NAME1 "January"
+#define MONTH_NAME2 "February"
+#define MONTH_NAME3 "March"
+#define MONTH_NAME4 "April"
+#define MONTH_NAME5 "May"
+#define MONTH_NAME6 "June"
+#define MONTH_NAME7 "July"
+#define MONTH_NAME8 "August"
+#define MONTH_NAME9 "September"
+#define MONTH_NAME10 "October"
+#define MONTH_NAME11 "November"
+#define MONTH_NAME12 "December"
+#define MONTH_NAME_(x,y) x ## y
+#define MONTH_NAME(m) MONTH_NAME_(MONTH_NAME,m)
+
+//------------------------------------------------------------------------------
+
+#endif // _VERSION_H
+
+//..............................................................................
