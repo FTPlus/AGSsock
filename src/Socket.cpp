@@ -78,12 +78,9 @@ int AGSSocket::Serialize(const char *ptr, char *buffer, int length)
 	Socket *sock = (Socket *) ptr;
 	AGSSocketSerial serial =
 	{
-		sock->domain,
-		sock->type,
-		sock->protocol,
+		sock->domain, sock->type, sock->protocol,
 		sock->error,
-		AGS_TO_KEY(sock->local),
-		AGS_TO_KEY(sock->remote)
+		AGS_TO_KEY(sock->local), AGS_TO_KEY(sock->remote)
 	};
 	
 	int size = MIN(length, sizeof (AGSSocketSerial));
@@ -104,17 +101,20 @@ void AGSSocket::Unserialize(int key, const char *buffer, int length)
 	AGSSocketSerial serial;
 	int size = MIN(length, sizeof (AGSSocketSerial));
 	memcpy(&serial, buffer, size);
-	
-	Socket *sock = new Socket;
-	sock->id = INVALID_SOCKET;
-	sock->domain = serial.domain;
-	sock->type = serial.type;
-	sock->protocol = serial.protocol;
-	sock->error = serial.error;
-	sock->local = AGS_FROM_KEY(SockAddr, serial.local);
-	sock->remote = AGS_FROM_KEY(SockAddr, serial.remote);
+
+	string tag;
 	if (length - size > 0)
-		sock->tag = string(buffer + size, length - size);
+		tag = string(buffer + size, length - size);
+	
+	Socket *sock = new Socket
+	{
+		INVALID_SOCKET,
+		serial.domain, serial.type, serial.protocol,
+		serial.error,
+		AGS_FROM_KEY(SockAddr, serial.local),
+		AGS_FROM_KEY(SockAddr, serial.remote),
+		tag
+	};
 	
 	AGS_RESTORE(Socket, sock, key);
 }
@@ -123,22 +123,22 @@ void AGSSocket::Unserialize(int key, const char *buffer, int length)
 
 Socket *Socket_Create(long domain, long type, long protocol)
 {
-	Socket *sock = new Socket;
-	AGS_OBJECT(Socket, sock);
-	sock->id = socket(domain, type, protocol);
-	sock->error = GET_ERROR();
-	
+	SOCKET id = socket(domain, type, protocol);
+	long error = GET_ERROR();
+
 	// The entire plugin is nonblocking except for:
 	//     1. connections in sync mode (async = false)
 	//     2. address lookups
-	setblocking(sock->id, false);
-	
-	sock->domain = domain;
-	sock->type = type;
-	sock->protocol = protocol;
-	
-	sock->local = nullptr;
-	sock->remote = nullptr;
+	setblocking(id, false);
+
+	Socket *sock = new Socket
+	{
+		id,
+		domain, type, protocol,
+		error,
+		nullptr, nullptr
+	};
+	AGS_OBJECT(Socket, sock);
 	
 	return sock;
 }
@@ -196,8 +196,8 @@ void Socket_set_Tag(Socket *sock, const char *str)
 
 inline void Socket_update_Local(Socket *sock)
 {
-	int addrlen = sizeof (SockAddr);
-	getsockname(sock->id, (sockaddr *) sock->local, &addrlen);
+	int addrlen = ADDR_SIZE;
+	getsockname(sock->id, ADDR(sock->local), &addrlen);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -219,8 +219,8 @@ SockAddr *Socket_get_Local(Socket *sock)
 
 inline void Socket_update_Remote(Socket *sock)
 {
-	int addrlen = sizeof (SockAddr);
-	getpeername(sock->id, (sockaddr *) sock->remote, &addrlen);
+	int addrlen = ADDR_SIZE;
+	getpeername(sock->id, ADDR(sock->remote), &addrlen);
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -242,27 +242,18 @@ SockAddr *Socket_get_Remote(Socket *sock)
 
 const char *Socket_ErrorString(Socket *sock)
 {
-	#ifdef _WIN32
-		LPSTR msg = nullptr;
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-		              0, sock->error, 0, (LPSTR)&msg, 0, 0);
-		const char *str = AGS_STRING(msg);
-		LocalFree(msg);
-		return str;
-	#else
-		return AGS_STRING(strerror(sock->error));
-	#endif
+	return AGSFormatError(sock->error);
 }
 
 //==============================================================================
 
 long Socket_Bind(Socket *sock, const SockAddr *addr)
 {
-	long ret = (bind(sock->id, (sockaddr *) addr, sizeof (SockAddr)) == SOCKET_ERROR ? 0 : 1);
+	long ret = bind(sock->id, CONST_ADDR(addr), ADDR_SIZE);
 	sock->error = GET_ERROR();
 	if (sock->local != nullptr)
 		Socket_update_Local(sock);
-	return ret;
+	return ret == SOCKET_ERROR ? 0 : 1;
 }
 
 //------------------------------------------------------------------------------
@@ -271,9 +262,9 @@ long Socket_Listen(Socket *sock, long backlog)
 {
 	if (backlog < 0)
 		backlog = SOMAXCONN;
-	long ret = (listen(sock->id, backlog) == SOCKET_ERROR ? 0 : 1);
+	long ret = listen(sock->id, backlog);
 	sock->error = GET_ERROR();
-	return ret;
+	return ret == SOCKET_ERROR ? 0 : 1;
 }
 
 //------------------------------------------------------------------------------
@@ -288,23 +279,16 @@ long Socket_Connect(Socket *sock, const SockAddr *addr, long async)
 	if (!async) // Sync mode: do a blocking connect
 	{
 		setblocking(sock->id, true);
-		ret = connect(sock->id, (sockaddr *) addr, sizeof (SockAddr));
+		ret = connect(sock->id, CONST_ADDR(addr), ADDR_SIZE);
 		setblocking(sock->id, false);
 	}
 	else
-		ret = connect(sock->id, (sockaddr *) addr, sizeof (SockAddr));
+		ret = connect(sock->id, CONST_ADDR(addr), ADDR_SIZE);
 	
 	// In async mode: returning false but with error == 0 is: try again
 	sock->error = GET_ERROR();
-	#ifdef _WIN32
-		// Note: rumours are that timeouts are reported incorrectly: TEST THIS
-		if (sock->error == WSAEALREADY
-		|| sock->error == WSAEINVAL || sock->error == WSAEWOULDBLOCK)
-			sock->error = 0;
-	#else
-		if (sock->error == EINPROGRESS || sock->error == EALREADY)
-			sock->error = 0;
-	#endif
+	if (ALREADY(sock->error)) // If already trying to connect
+		sock->error = 0;
 	
 	if (ret != SOCKET_ERROR)
 	{
@@ -322,9 +306,9 @@ long Socket_Connect(Socket *sock, const SockAddr *addr, long async)
 Socket *Socket_Accept(Socket *sock)
 {
 	SockAddr addr;
-	int addrlen = sizeof (SockAddr);
+	int addrlen = ADDR_SIZE;
 	
-	SOCKET conn = accept(sock->id, (sockaddr *) &addr, &addrlen);
+	SOCKET conn = accept(sock->id, ADDR(&addr), &addrlen);
 	sock->error = GET_ERROR();
 	if (WOULD_BLOCK(sock->error))
 		sock->error = 0;
@@ -332,22 +316,18 @@ Socket *Socket_Accept(Socket *sock)
 	if (conn == INVALID_SOCKET)
 		return nullptr;
 	
-	Socket *sock2 = new Socket;
+	Socket *sock2 = new Socket
+	{
+		conn,
+		sock->domain, sock->type, sock->protocol,
+		0,
+		// It might be more efficient to use the local and returned address, but
+		// I rather let the API re-resolve them when needed (less error prone).
+		nullptr, nullptr
+	};
 	AGS_OBJECT(Socket, sock2);
 	
-	sock2->id = conn;
-	sock2->error = 0;
-	
-	sock2->domain = sock->domain;
-	sock2->type = sock->type;
-	sock2->protocol = sock->protocol;
-	
-	// It might be more efficient to use the local and returned address but I
-	// rather let the API re-resolve them when needed (less error prone).
-	sock2->local = nullptr;
-	sock2->remote = nullptr;
-	
-	setblocking(sock2->id, false);
+	setblocking(conn, false);
 	pool->add(sock2);
 	
 	return sock2;
@@ -357,7 +337,7 @@ Socket *Socket_Accept(Socket *sock)
 
 void Socket_Close(Socket *sock)
 {
-	if (sock->protocol == IPPROTO_TCP)
+	if (sock->type == SOCK_STREAM)
 	{
 		// Graceful shutdown, the poolthread will detect if it succeeded.
 		shutdown(sock->id, SD_SEND);
@@ -424,8 +404,7 @@ inline long sendto_impl(Socket *sock, const SockAddr *addr,
 	
 	while (count > 0)
 	{
-		ret = sendto(sock->id, buf, count, 0,
-			(sockaddr *) addr, sizeof (SockAddr));
+		ret = sendto(sock->id, buf, count, 0, CONST_ADDR(addr), ADDR_SIZE);
 		if (ret == SOCKET_ERROR)
 			break;
 		buf += ret;
@@ -524,12 +503,12 @@ template <typename T> inline T *recv_impl(Socket *sock)
 			return nullptr;
 		}
 		
-		data = recv_extract<T>(sock->incoming, sock->protocol == IPPROTO_TCP);
+		data = recv_extract<T>(sock->incoming, sock->type == SOCK_STREAM);
 	}
 	
 	sock->error = 0;
 
-	if (recv_empty(data) && sock->protocol == IPPROTO_TCP)
+	if (recv_empty(data) && sock->type == SOCK_STREAM)
 	{
 		// TCP socket was closed, invalidate it.
 		closesocket(sock->id);
@@ -579,9 +558,9 @@ template <typename T> inline T *recvfrom_impl(Socket *sock, SockAddr *addr)
 	char buffer[65536];
 	buffer[sizeof (buffer) - 1] = 0;
 
-	int addrlen = sizeof (SockAddr);
+	int addrlen = ADDR_SIZE;
 	long ret = recvfrom(sock->id, buffer, sizeof (buffer) - 1, 0,
-		(sockaddr *) addr, &addrlen);
+		ADDR(addr), &addrlen);
 	sock->error = GET_ERROR();
 	
 	if (ret == SOCKET_ERROR)

@@ -41,6 +41,7 @@
 	#endif
 
 	#define WOULD_BLOCK(x) ((x) == WSAEWOULDBLOCK)
+	#define ALREADY(x) ((x) == WSAEALREADY || (x) == WSAEINVAL || (x) == WSAEWOULDBLOCK)
 	#define GET_ERROR() WSAGetLastError()
 #else
 	#include <fcntl.h>
@@ -61,6 +62,7 @@
 	#define SD_SEND SHUT_WR
 	#define SD_BOTH SHUT_RDWR
 	#define WOULD_BLOCK(x) ((x) == EAGAIN || (x) == EWOULDBLOCK)
+	#define ALREADY(x) ((x) == EINPROGRESS || (x) == EALREADY)
 	#define GET_ERROR() errno
 #endif
 
@@ -120,6 +122,10 @@ extern IAGSEngine *engine; //!< AGS' engine plugin interface
 
 void Initialize(); //!< Initializes the API
 void Terminate();  //!< Cleans up the API
+
+//! Returns an AGS string containing an human-readable error message for a
+//! specific error code.
+const char *AGSFormatError(int errnum);
 
 //------------------------------------------------------------------------------
 

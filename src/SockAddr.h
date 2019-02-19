@@ -27,6 +27,10 @@ AGS_DEFINE_CLASS(SockAddr)
 
 //------------------------------------------------------------------------------
 
+#define ADDR_SIZE (sizeof (SockAddr))
+#define ADDR(x) (reinterpret_cast<sockaddr *> (x))
+#define CONST_ADDR(x) (reinterpret_cast<const sockaddr *> (x))
+
 SockAddr *SockAddr_Create(long type);
 SockAddr *SockAddr_CreateFromString(const char *, long type);
 SockAddr *SockAddr_CreateFromData(const SockData *);

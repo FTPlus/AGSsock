@@ -41,11 +41,11 @@ void Pool::run()
 		for (Socket *sock : sockets_)
 		{
 			FD_SET(sock->id, &read);
-			// Windows ignores the nfds parameter, can we default to this?
-			#ifndef _WIN32
-				if (nfds < sock->id)
-					nfds = sock->id;
-			#endif
+			// Windows ignores the nfds parameter, skip for efficiency
+		#ifndef _WIN32
+			if (nfds < sock->id)
+				nfds = sock->id;
+		#endif
 		}
 	}
 	
@@ -89,15 +89,16 @@ void Pool::run()
 				
 				if (ret == SOCKET_ERROR)
 					sock->incoming.error = error;
-				else if (sock->protocol == IPPROTO_TCP)
+				else if (sock->type == SOCK_STREAM)
 					sock->incoming.append(buffer, ret);
 				else
 					sock->incoming.push(buffer, ret);
 				
 				if ((ret == SOCKET_ERROR)
-					|| (!ret && sock->protocol == IPPROTO_TCP))
+					|| (!ret && sock->type == SOCK_STREAM))
 				{
-					sockets_.erase(it++); // This socket is done for, stop reading
+					// This socket is done for, stop reading
+					sockets_.erase(it++);
 					continue;
 				}	
 			}

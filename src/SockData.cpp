@@ -11,7 +11,7 @@ namespace AGSSock {
 
 int AGSSockData::Dispose(const char *data, bool force)
 {
-	delete ((SockData *) data);
+	delete (SockData *) data;
 	return 1;
 }
 

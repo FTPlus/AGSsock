@@ -16,7 +16,7 @@ namespace AGSSock {
 
 int AGSSockAddr::Dispose(const char *addr, bool force)
 {
-	delete ((SockAddr *) addr);
+	delete (SockAddr *) addr;
 	return 1;
 }
 
@@ -24,7 +24,7 @@ int AGSSockAddr::Dispose(const char *addr, bool force)
 
 int AGSSockAddr::Serialize(const char *addr, char *buffer, int size)
 {
-	size = MIN(size, sizeof (SockAddr));
+	size = MIN(size, ADDR_SIZE);
 	memcpy(buffer, addr, size);
 	return size;
 }
@@ -33,8 +33,8 @@ int AGSSockAddr::Serialize(const char *addr, char *buffer, int size)
 
 void AGSSockAddr::Unserialize(int key, const char *buffer, int size)
 {
-	size = MIN(size, sizeof (SockAddr));
-	SockAddr *addr = new SockAddr;
+	size = MIN(size, ADDR_SIZE);
+	SockAddr *addr = new SockAddr; // Default-intitalized by design
 	memcpy(addr, buffer, size);
 	AGS_RESTORE(SockAddr, addr, key);
 }
@@ -43,9 +43,9 @@ void AGSSockAddr::Unserialize(int key, const char *buffer, int size)
 
 SockAddr *SockAddr_Create(long type)
 {
-	SockAddr *addr = new SockAddr;
+	SockAddr *addr = new SockAddr; // by design
 	AGS_OBJECT(SockAddr, addr);
-	memset(addr, 0, sizeof (SockAddr));
+	memset(addr, 0, ADDR_SIZE);
 	addr->ss_family = type;
 	return addr;
 }
@@ -63,9 +63,9 @@ SockAddr *SockAddr_CreateFromString(const char *str, long type)
 
 SockAddr *SockAddr_CreateFromData(const SockData *data)
 {
-	SockAddr *addr = new SockAddr;
+	SockAddr *addr = new SockAddr; // by design
 	AGS_OBJECT(SockAddr, addr);
-	memcpy(addr, data->data.data(), MIN(data->data.size(),sizeof (SockAddr)));
+	memcpy(addr, data->data.data(), MIN(data->data.size(), ADDR_SIZE));
 	return addr;
 }
 
@@ -95,12 +95,12 @@ long SockAddr_get_Port(SockAddr *sa)
 {
 	if (sa->ss_family == AF_INET)
 	{
-		sockaddr_in *addr = (sockaddr_in *)sa;
+		sockaddr_in *addr = reinterpret_cast<sockaddr_in *> (sa);
 		return ntohs(addr->sin_port);
 	}
 	else if (sa->ss_family == AF_INET6)
 	{
-		sockaddr_in6 *addr = (sockaddr_in6 *)sa;
+		sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *> (sa);
 		return ntohs(addr->sin6_port);
 	}
 	else
@@ -113,12 +113,12 @@ void SockAddr_set_Port(SockAddr *sa, long port)
 {
 	if (sa->ss_family == AF_INET)
 	{
-		sockaddr_in *addr = (sockaddr_in *)sa;
+		sockaddr_in *addr = reinterpret_cast<sockaddr_in *> (sa);
 		addr->sin_port = htons(port);
 	}
 	else if (sa->ss_family == AF_INET6)
 	{
-		sockaddr_in6 *addr = (sockaddr_in6 *)sa;
+		sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *> (sa);
 		addr->sin6_port = htons(port);
 	}
 }
@@ -131,11 +131,11 @@ const char *SockAddr_get_Address(SockAddr *sa)
 	char host[NI_MAXHOST];
 	char serv[NI_MAXSERV];
 	
-	if (getnameinfo((const sockaddr *) sa, sizeof (SockAddr),
+	if (getnameinfo(ADDR(sa), ADDR_SIZE,
 		host, sizeof (host), serv, sizeof (serv), 0))
 	{
 		// It failed: let's try without service names
-		if (getnameinfo((const sockaddr *) sa, sizeof (SockAddr),
+		if (getnameinfo(ADDR(sa), ADDR_SIZE,
 			host, sizeof (host), NULL, 0, 0))
 		{
 			// Handle error:
@@ -203,7 +203,8 @@ void SockAddr_set_Address(SockAddr *sa, const char *addr)
 const char *SockAddr_get_IP(SockAddr *sa)
 {
 	char buffer[1024] = "";
-	inet_ntop(sa->ss_family, (const void *) sa, buffer, sizeof (buffer));
+	inet_ntop(sa->ss_family, static_cast<const void *> (sa),
+		buffer, sizeof (buffer));
 	return AGS_STRING(buffer);
 }
 
@@ -211,7 +212,7 @@ const char *SockAddr_get_IP(SockAddr *sa)
 
 void SockAddr_set_IP(SockAddr *sa, const char *ip)
 {
-	inet_pton(sa->ss_family, ip, (void *) sa);
+	inet_pton(sa->ss_family, ip, static_cast<void *> (sa));
 }
 
 //------------------------------------------------------------------------------
@@ -220,8 +221,8 @@ SockData *SockAddr_GetData(SockAddr *sa)
 {
 	SockData *data = new SockData();
 	AGS_OBJECT(SockData, data);
-	data->data = std::string((char *) sa, sizeof (SockAddr));
-	return (SockData *) data;
+	data->data = std::string(reinterpret_cast<char *> (sa), ADDR_SIZE);
+	return data;
 }
 
 //------------------------------------------------------------------------------

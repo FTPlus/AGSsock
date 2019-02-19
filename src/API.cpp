@@ -33,6 +33,22 @@ void Terminate()
 #endif
 }
 
+//------------------------------------------------------------------------------
+
+const char *AGSFormatError(int errnum)
+{
+#ifdef _WIN32
+	LPSTR msg = nullptr;
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+	              0, errnum, 0, (LPSTR)&msg, 0, 0);
+	const char *str = AGS_STRING(msg);
+	LocalFree(msg);
+	return str;
+#else
+	return AGS_STRING(strerror(errnum));
+#endif
+}
+
 //==============================================================================
 
 struct Thread::Data
@@ -76,7 +92,7 @@ struct Thread::Data
 
 //------------------------------------------------------------------------------
 
-Thread::Thread(Callback callback) : func(callback), data(new Data) {}
+Thread::Thread(Callback callback) : func(callback), data(new Data()) {}
 
 Thread::~Thread()
 {
@@ -209,7 +225,7 @@ Beacon::Beacon()
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addr.sin_port = 0;
 	
-	connect(data.fd, (sockaddr *) &addr, sizeof (addr));
+	connect(data.fd, static_cast<sockaddr *> (&addr), sizeof (addr));
 #elif defined(_WIN32) && (IMPL_MODE == 2)
 	data.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	setblocking(data.fd, false);
@@ -272,8 +288,8 @@ void Beacon::signal()
 
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
 {
-	if (getnameinfo((const sockaddr *) src, sizeof (SOCKADDR_STORAGE),
-		dst, size, nullptr, 0, NI_NUMERICHOST))
+	if (getnameinfo(static_cast<const sockaddr *> (src),
+		sizeof (SOCKADDR_STORAGE), dst, size, nullptr, 0, NI_NUMERICHOST))
 		return nullptr;
 	else
 		return dst;
@@ -294,15 +310,15 @@ int inet_pton(int af, const char *src, void *dst)
 	{
 		if (af == AF_INET)
 		{
-			u_short port = ((sockaddr_in *) dst)->sin_port;
+			u_short port = (static_cast<sockaddr_in *> (dst))->sin_port;
 			memcpy(dst, result->ai_addr, result->ai_addrlen);
-			((sockaddr_in *) dst)->sin_port = port;
+			(static_cast<sockaddr_in *> (dst))->sin_port = port;
 		}
 		else if (af == AF_INET6)
 		{
-			u_short port = ((sockaddr_in6 *) dst)->sin6_port;
+			u_short port = (static_cast<sockaddr_in6 *> (dst))->sin6_port;
 			memcpy(dst, result->ai_addr, result->ai_addrlen);
-			((sockaddr_in6 *) dst)->sin6_port = port;
+			(static_cast<sockaddr_in6 *> (dst))->sin6_port = port;
 		}
 		else
 			memcpy(dst, result->ai_addr, result->ai_addrlen);
