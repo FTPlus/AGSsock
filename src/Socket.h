@@ -35,8 +35,8 @@ struct Socket
 {
 	// Exposed: <<<DO NOT CHANGE THE ORDER!!!>>>
 	SOCKET id;
-	long domain, type, protocol;
-	long error;
+	ags_t domain, type, protocol;
+	ags_t error;
 	
 	// Internal:
 	SockAddr *local, *remote;
@@ -48,36 +48,36 @@ AGS_DEFINE_CLASS(Socket)
 
 //------------------------------------------------------------------------------
 
-Socket *Socket_Create(long domain, long type, long protocol);
+Socket *Socket_Create(ags_t domain, ags_t type, ags_t protocol);
 Socket *Socket_CreateUDP();
 Socket *Socket_CreateTCP();
 Socket *Socket_CreateUDPv6();
 Socket *Socket_CreateTCPv6();
 
-long Socket_get_Valid(Socket *);
+ags_t Socket_get_Valid(Socket *);
 const char *Socket_get_Tag(Socket *);
 void Socket_set_Tag(Socket *, const char *);
 SockAddr *Socket_get_Local(Socket *);
 SockAddr *Socket_get_Remote(Socket *);
 const char *Socket_ErrorString(Socket *);
 
-long Socket_Bind(Socket *, const SockAddr *);
-long Socket_Listen(Socket *, long backlog);
-long Socket_Connect(Socket *, const SockAddr *, long async);
+ags_t Socket_Bind(Socket *, const SockAddr *);
+ags_t Socket_Listen(Socket *, ags_t backlog);
+ags_t Socket_Connect(Socket *, const SockAddr *, ags_t async);
 Socket *Socket_Accept(Socket *);
 void Socket_Close(Socket *);
 
-long Socket_Send(Socket *, const char *);
-long Socket_SendData(Socket *, const SockData *);
-long Socket_SendTo(Socket *, const SockAddr *, const char *);
-long Socket_SendDataTo(Socket *, const SockAddr *, const SockData *);
+ags_t Socket_Send(Socket *, const char *);
+ags_t Socket_SendData(Socket *, const SockData *);
+ags_t Socket_SendTo(Socket *, const SockAddr *, const char *);
+ags_t Socket_SendDataTo(Socket *, const SockAddr *, const SockData *);
 const char *Socket_Recv(Socket *);
 SockData *Socket_RecvData(Socket *);
 const char *Socket_RecvFrom(Socket *, SockAddr *);
 SockData *Socket_RecvDataFrom(Socket *, SockAddr *);
 
-long Socket_GetOption(Socket *, long level, long option);
-void Socket_SetOption(Socket *, long level, long option, long value);
+ags_t Socket_GetOption(Socket *, ags_t level, ags_t option);
+void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 
 //------------------------------------------------------------------------------
 

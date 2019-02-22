@@ -32,7 +32,7 @@ void AGSSockData::Unserialize(int key, const char *buffer, int size)
 
 //==============================================================================
 
-SockData *SockData_Create(long size, long byte)
+SockData *SockData_Create(ags_t size, ags_t byte)
 {
 	SockData *data = new SockData(size, byte);
 	AGS_OBJECT(SockData, data);
@@ -59,28 +59,28 @@ SockData *SockData_CreateFromString(const char *str)
 
 //------------------------------------------------------------------------------
 
-long SockData_get_Size(SockData *sd)
+ags_t SockData_get_Size(SockData *sd)
 {
 	return sd->data.size();
 }
 
 //------------------------------------------------------------------------------
 
-void SockData_set_Size(SockData *sd, long size)
+void SockData_set_Size(SockData *sd, ags_t size)
 {
 	sd->data.resize((size_t) size);
 }
 
 //------------------------------------------------------------------------------
 
-long SockData_geti_Chars(SockData *sd, long index)
+ags_t SockData_geti_Chars(SockData *sd, ags_t index)
 {
 	return sd->data[index];
 }
 
 //------------------------------------------------------------------------------
 
-void SockData_seti_Chars(SockData *sd, long index, long byte)
+void SockData_seti_Chars(SockData *sd, ags_t index, ags_t byte)
 {
 	sd->data[index] = (char) byte;
 }

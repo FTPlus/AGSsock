@@ -31,14 +31,14 @@ AGS_DEFINE_CLASS(SockAddr)
 #define ADDR(x) (reinterpret_cast<sockaddr *> (x))
 #define CONST_ADDR(x) (reinterpret_cast<const sockaddr *> (x))
 
-SockAddr *SockAddr_Create(long type);
-SockAddr *SockAddr_CreateFromString(const char *, long type);
+SockAddr *SockAddr_Create(ags_t type);
+SockAddr *SockAddr_CreateFromString(const char *, ags_t type);
 SockAddr *SockAddr_CreateFromData(const SockData *);
-SockAddr *SockAddr_CreateIP(const char *addr, long port);
-SockAddr *SockAddr_CreateIPv6(const char *addr, long port);
+SockAddr *SockAddr_CreateIP(const char *addr, ags_t port);
+SockAddr *SockAddr_CreateIPv6(const char *addr, ags_t port);
 
-long SockAddr_get_Port(SockAddr *);
-void SockAddr_set_Port(SockAddr *, long);
+ags_t SockAddr_get_Port(SockAddr *);
+void SockAddr_set_Port(SockAddr *, ags_t);
 const char *SockAddr_get_Address(SockAddr *);
 void SockAddr_set_Address(SockAddr *, const char *);
 const char *SockAddr_get_IP(SockAddr *);

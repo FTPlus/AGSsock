@@ -2,6 +2,7 @@
  * Socket interface -- See header file for more information. *
  *************************************************************/
 
+#include <cstdint>
 #include <cstring>
 
 #include "Pool.h"
@@ -62,9 +63,9 @@ int AGSSocket::Dispose(const char *ptr, bool force)
 #pragma pack(push, 1)
 	struct AGSSocketSerial
 	{
-		long domain, type, protocol;
-		long error;
-		int local, remote;
+		std::int32_t domain, type, protocol;
+		std::int32_t error;
+		std::int32_t local, remote;
 	};
 #pragma pack(pop)
 
@@ -121,10 +122,10 @@ void AGSSocket::Unserialize(int key, const char *buffer, int length)
 
 //==============================================================================
 
-Socket *Socket_Create(long domain, long type, long protocol)
+Socket *Socket_Create(ags_t domain, ags_t type, ags_t protocol)
 {
 	SOCKET id = socket(domain, type, protocol);
-	long error = GET_ERROR();
+	ags_t error = GET_ERROR();
 
 	// The entire plugin is nonblocking except for:
 	//     1. connections in sync mode (async = false)
@@ -173,7 +174,7 @@ Socket *Socket_CreateTCPv6()
 
 //==============================================================================
 
-long Socket_get_Valid(Socket *sock)
+ags_t Socket_get_Valid(Socket *sock)
 {
 	return (sock->id != INVALID_SOCKET ? 1 : 0);
 }
@@ -247,9 +248,9 @@ const char *Socket_ErrorString(Socket *sock)
 
 //==============================================================================
 
-long Socket_Bind(Socket *sock, const SockAddr *addr)
+ags_t Socket_Bind(Socket *sock, const SockAddr *addr)
 {
-	long ret = bind(sock->id, CONST_ADDR(addr), ADDR_SIZE);
+	int ret = bind(sock->id, CONST_ADDR(addr), ADDR_SIZE);
 	sock->error = GET_ERROR();
 	if (sock->local != nullptr)
 		Socket_update_Local(sock);
@@ -258,11 +259,11 @@ long Socket_Bind(Socket *sock, const SockAddr *addr)
 
 //------------------------------------------------------------------------------
 
-long Socket_Listen(Socket *sock, long backlog)
+ags_t Socket_Listen(Socket *sock, ags_t backlog)
 {
 	if (backlog < 0)
 		backlog = SOMAXCONN;
-	long ret = listen(sock->id, backlog);
+	int ret = listen(sock->id, backlog);
 	sock->error = GET_ERROR();
 	return ret == SOCKET_ERROR ? 0 : 1;
 }
@@ -272,7 +273,7 @@ long Socket_Listen(Socket *sock, long backlog)
 // by binding a remote address to the socket. We will complete this illusion by
 // adding the socket to the pool.
 
-long Socket_Connect(Socket *sock, const SockAddr *addr, long async)
+ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 {
 	int ret;
 	
@@ -365,7 +366,7 @@ void Socket_Close(Socket *sock)
 // Send is nonblocking:
 // If it returns 0 and the error is also 0: try again!
 
-inline long send_impl(Socket *sock, const char *buf, size_t count)
+inline ags_t send_impl(Socket *sock, const char *buf, size_t count)
 {
 	long ret = 0;
 	
@@ -385,19 +386,19 @@ inline long send_impl(Socket *sock, const char *buf, size_t count)
 	return (ret == SOCKET_ERROR ? 0 : 1);
 }
 
-long Socket_Send(Socket *sock, const char *str)
+ags_t Socket_Send(Socket *sock, const char *str)
 {
 	return send_impl(sock, str, strlen(str));
 }
 
-long Socket_SendData(Socket *sock, const SockData *data)
+ags_t Socket_SendData(Socket *sock, const SockData *data)
 {
 	return send_impl(sock, data->data.data(), data->data.size());
 }
 
 //------------------------------------------------------------------------------
 
-inline long sendto_impl(Socket *sock, const SockAddr *addr,
+inline ags_t sendto_impl(Socket *sock, const SockAddr *addr,
 	const char *buf, size_t count)
 {
 	long ret = 0;
@@ -418,12 +419,12 @@ inline long sendto_impl(Socket *sock, const SockAddr *addr,
 	return (ret == SOCKET_ERROR ? 0 : 1);
 }
 
-long Socket_SendTo(Socket *sock, const SockAddr *addr, const char *str)
+ags_t Socket_SendTo(Socket *sock, const SockAddr *addr, const char *str)
 {
 	return sendto_impl(sock, addr, str, strlen(str));
 }
 
-long Socket_SendDataTo(Socket *sock, const SockAddr *addr, const SockData *data)
+ags_t Socket_SendDataTo(Socket *sock, const SockAddr *addr, const SockData *data)
 {
 	return sendto_impl(sock, addr, data->data.data(), data->data.size());
 }
@@ -581,14 +582,14 @@ SockData *Socket_RecvDataFrom(Socket *sock, SockAddr *addr)
 
 //==============================================================================
 
-long Socket_GetOption(Socket *, long level, long option)
+ags_t Socket_GetOption(Socket *, ags_t level, ags_t option)
 {
 	return 0; // Todo: implement
 }
 
 //------------------------------------------------------------------------------
 
-void Socket_SetOption(Socket *, long level, long option, long value)
+void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value)
 {
 	// Todo: implement
 }

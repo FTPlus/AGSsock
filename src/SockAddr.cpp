@@ -41,7 +41,7 @@ void AGSSockAddr::Unserialize(int key, const char *buffer, int size)
 
 //==============================================================================
 
-SockAddr *SockAddr_Create(long type)
+SockAddr *SockAddr_Create(ags_t type)
 {
 	SockAddr *addr = new SockAddr; // by design
 	AGS_OBJECT(SockAddr, addr);
@@ -52,7 +52,7 @@ SockAddr *SockAddr_Create(long type)
 
 //------------------------------------------------------------------------------
 
-SockAddr *SockAddr_CreateFromString(const char *str, long type)
+SockAddr *SockAddr_CreateFromString(const char *str, ags_t type)
 {
 	SockAddr *addr = SockAddr_Create(type);
 	SockAddr_set_Address(addr, str);
@@ -71,7 +71,7 @@ SockAddr *SockAddr_CreateFromData(const SockData *data)
 
 //------------------------------------------------------------------------------
 
-SockAddr *SockAddr_CreateIP(const char *ip, long port)
+SockAddr *SockAddr_CreateIP(const char *ip, ags_t port)
 {
 	SockAddr *addr = SockAddr_Create(AF_INET);
 	SockAddr_set_IP(addr, ip);
@@ -81,7 +81,7 @@ SockAddr *SockAddr_CreateIP(const char *ip, long port)
 
 //------------------------------------------------------------------------------
 
-SockAddr *SockAddr_CreateIPv6(const char *ip, long port)
+SockAddr *SockAddr_CreateIPv6(const char *ip, ags_t port)
 {
 	SockAddr *addr = SockAddr_Create(AF_INET6);
 	SockAddr_set_IP(addr, ip);
@@ -91,7 +91,7 @@ SockAddr *SockAddr_CreateIPv6(const char *ip, long port)
 
 //------------------------------------------------------------------------------
 
-long SockAddr_get_Port(SockAddr *sa)
+ags_t SockAddr_get_Port(SockAddr *sa)
 {
 	if (sa->ss_family == AF_INET)
 	{
@@ -109,7 +109,7 @@ long SockAddr_get_Port(SockAddr *sa)
 
 //------------------------------------------------------------------------------
 
-void SockAddr_set_Port(SockAddr *sa, long port)
+void SockAddr_set_Port(SockAddr *sa, ags_t port)
 {
 	if (sa->ss_family == AF_INET)
 	{

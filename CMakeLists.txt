@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 
 include(CheckSymbolExists)
+include(CheckTypeSize)
 
 project("AGS Sockets" VERSION 0.1.0.0
 	DESCRIPTION "Sockets plugin for Adventure Game Studio")
@@ -41,7 +42,17 @@ endif()
 
 if(NOT WIN32)
 	check_symbol_exists("pthread_timedjoin_np" "pthread.h" HAVE_TIMEDJOIN)
-	add_definitions(HAVE_TIMEDJOIN)
+	if(HAVE_TIMEDJOIN)
+		add_definitions(-DHAVE_TIMEDJOIN)
+	endif()
+endif()
+
+check_type_size("intptr_t" INTPTR_T)
+if(HAVE_INTPTR_T)
+	add_definitions(-DHAVE_INTPTR_T)
+	if (NOT INTPTR_T EQUAL 4)
+		message("WARNING Target platform is probably not 32 bits; this may cause problems with aligment of the plugin functions. If the plugin crashes when used, check if building for 32 bits averts the problem.")
+	endif()
 endif()
 
 # Tests

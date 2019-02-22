@@ -74,6 +74,7 @@ int setblocking(SOCKET sock, bool state);
 
 //------------------------------------------------------------------------------
 
+#include <cstdint>
 #include <functional>
 
 #include "agsplugin.h"
@@ -98,6 +99,18 @@ int setblocking(SOCKET sock, bool state);
                           engine->RegisterScriptFunction(#c "::seti_" #x, (void *) (c ## _seti_ ## x));
 #define AGS_CLASS(c)      engine->AddManagedObjectReader(#c, &ags ## c);
 
+// Note: Unfortunately AGS makes assumptions about the size of 'int' and 'long',
+// specifically, long is used to pass around both integral and pointer values
+// in the plugin interface. This is non-portable. We introduce a special type
+// 'ags_t' for this purpose and implement it as intptr_t if possible. This
+// type has been added to the C++ spec for this purpose specifically. When it
+// is unavailable we resort to the old implementation.
+#ifdef HAVE_INTPTR_T
+typedef std::intptr_t ags_t;
+#else
+typedef long ags_t;
+#warning "The 'intptr_t' type is unavailable, resorting to 'long'. Alignment errors may occur in plugin function calls!"
+#endif
 
 #ifndef AGSMAIN
 	#define AGSMAIN extern

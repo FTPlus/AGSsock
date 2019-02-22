@@ -34,16 +34,16 @@ AGS_DEFINE_CLASS(SockData)
 
 //------------------------------------------------------------------------------
 
-SockData *SockData_Create(long, long);
+SockData *SockData_Create(ags_t, ags_t);
 SockData *SockData_CreateEmpty();
 SockData *SockData_CreateFromString(const char *);
 
-long SockData_get_Size(SockData *);
-void SockData_set_Size(SockData *, long);
+ags_t SockData_get_Size(SockData *);
+void SockData_set_Size(SockData *, ags_t);
 
 // Note: No range checks are preformed for efficiency!
-long SockData_geti_Chars(SockData *, long);
-void SockData_seti_Chars(SockData *, long, long);
+ags_t SockData_geti_Chars(SockData *, ags_t);
+void SockData_seti_Chars(SockData *, ags_t, ags_t);
 
 const char *SockData_AsString(SockData *);
 void SockData_Clear(SockData *);
