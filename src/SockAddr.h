@@ -61,22 +61,22 @@ SockData *SockAddr_GetData(SockAddr *);
 	"managed struct SockAddr\r\n" \
 	"{\r\n" \
 	"  /// Creates an empty socket address. (advanced: set type to IPv6 if you're using IPv6).\r\n" \
-	"  import static SockAddr *Create(int type = IPv4);                           // $AUTOCOMPLETESTATICONLY$\r\n" \
+	"  import static SockAddr *Create(int type = IPv4);                                 // $AUTOCOMPLETESTATICONLY$\r\n" \
 	"  /// Creates a socket address from a string. (for example: \"http://www.adventuregamestudio.co.uk\")\r\n" \
-	"  import static SockAddr *CreateFromString(String address, int type = IPv4); // $AUTOCOMPLETESTATICONLY$\r\n" \
+	"  import static SockAddr *CreateFromString(const string address, int type = IPv4); // $AUTOCOMPLETESTATICONLY$\r\n" \
 	"  /// Creates a socket address from raw data. (advanced)\r\n" \
-	"  import static SockAddr *CreateFromData(SockData *);                        // $AUTOCOMPLETEIGNORE$\r\n" \
+	"  import static SockAddr *CreateFromData(SockData *);                              // $AUTOCOMPLETEIGNORE$\r\n" \
 	"  /// Creates a socket address from an IP-address. (for example: \"127.0.0.1\")\r\n" \
-	"  import static SockAddr *CreateIP(String address, int port);                // $AUTOCOMPLETESTATICONLY$\r\n" \
+	"  import static SockAddr *CreateIP(const string address, int port);                // $AUTOCOMPLETESTATICONLY$\r\n" \
 	"  /// Creates a socket address from an IPv6-address. (for example: \"::1\")\r\n" \
-	"  import static SockAddr *CreateIPv6(String address, int port);              // $AUTOCOMPLETESTATICONLY$\r\n" \
+	"  import static SockAddr *CreateIPv6(const string address, int port);              // $AUTOCOMPLETESTATICONLY$\r\n" \
 	"  \r\n" \
 	"  import attribute int Port;\r\n" \
 	"  import attribute String Address;\r\n" \
 	"  import attribute String IP;\r\n" \
 	"  \r\n" \
 	"  /// Returns a SockData object that contains the raw data of the socket address. (advanced)\r\n" \
-	"  import SockData *GetData()\r\n" \
+	"  import SockData *GetData();\r\n" \
 	"};\r\n" \
 	"\r\n"
 

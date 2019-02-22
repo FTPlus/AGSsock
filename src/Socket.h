@@ -125,9 +125,9 @@ void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 	"	import void Close();\r\n" \
 	"	\r\n" \
 	"	/// Sends a string to the remote host. Returns whether successful. (no error means: try again later)\r\n" \
-	"	import bool Send(String msg);\r\n" \
+	"	import bool Send(const string msg);\r\n" \
 	"	/// Sends a string to the specified remote host. (UDP only)\r\n" \
-	"	import bool SendTo(SockAddr *target, String msg);\r\n" \
+	"	import bool SendTo(SockAddr *target, const string msg);\r\n" \
 	"	/// Receives a string from the remote host. (no error means: try again later)\r\n" \
 	"	import String Recv();\r\n" \
 	"	/// Receives a string from an unspecified host. The given address object will contain the remote address. (UDP only)\r\n" \

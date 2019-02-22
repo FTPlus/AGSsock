@@ -63,7 +63,7 @@ void SockData_Clear(SockData *);
 	"  /// Creates a new data container of zero size\r\n" \
 	"  import static SockData *CreateEmpty();                      // $AUTOCOMPLETESTATICONLY$\r\n" \
 	"  /// Creates a data container from a string.\r\n" \
-	"  import static SockData *CreateFromString(String str);       // $AUTOCOMPLETESTATICONLY$\r\n" \
+	"  import static SockData *CreateFromString(const string str); // $AUTOCOMPLETESTATICONLY$\r\n" \
 	"  \r\n" \
 	"  import attribute int Size;\r\n" \
 	"  import attribute char Chars[];\r\n" \
