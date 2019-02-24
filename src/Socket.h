@@ -143,9 +143,9 @@ void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 	"	import SockData *RecvDataFrom(SockAddr *source);\r\n" \
 	"	\r\n" \
 	"	/// Gets a socket option. (advanced)\r\n" \
-	"	import long GetOption(int level, int option);\r\n" \
+	"	import long GetOption(int level, int option);             // $AUTOCOMPLETEIGNORE$\r\n" \
 	"	/// Sets a socket option. (advanced)\r\n" \
-	"	import bool SetOption(int level, int option, long value);\r\n" \
+	"	import bool SetOption(int level, int option, long value); // $AUTOCOMPLETEIGNORE$\r\n" \
 	"};\r\n"
 
 #define SOCKET_ENTRY	                         \

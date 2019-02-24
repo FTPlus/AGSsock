@@ -60,3 +60,8 @@ enable_testing()
 
 add_executable(test-buffer test/buffer.cpp test/Test.cpp)
 add_test(Socket_buffer test-buffer)
+
+add_executable(test-pool test/pool.cpp test/Test.cpp src/API.cpp)
+target_include_directories(test-pool PUBLIC ${CMAKE_BINARY_DIR}/res)
+target_link_libraries(test-pool PRIVATE $<$<PLATFORM_ID:Windows>:ws2_32>)
+add_test(Socket_pool test-pool)

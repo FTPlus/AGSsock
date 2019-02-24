@@ -6,7 +6,7 @@
 	#define DEBUG_P(x) ((void) 0)
 #else
 	#include <cstdio>
-	#define DEBUG_P(x) std::puts("\t\t" x);
+	#define DEBUG_P(x) std::puts("\t\t" x)
 #endif
 
 #include "Pool.h"
@@ -15,7 +15,7 @@ namespace AGSSock {
 
 using namespace AGSSockAPI;
 
-// Invariant I: thread_->active() == (sockets_.size() > 0)
+// Invariant I: (sockets_.size() > 0) => thread_->active()
 // Invariant II: (sock->id == INVALID_SOCKET) => !sockets_.count(sock)
 
 //------------------------------------------------------------------------------
@@ -157,6 +157,20 @@ void Pool::clear()
 
 	sockets_.clear();
 	beacon_.signal();
+}
+
+Pool::operator bool()
+{
+	Mutex::Lock lock(guard_);
+
+	if ((sockets_.size() > 0) && !thread_.active())
+		return false;
+
+	for (Socket *sock : sockets_)
+		if (sock->id == INVALID_SOCKET)
+			return false;
+
+	return true;
 }
 
 //------------------------------------------------------------------------------

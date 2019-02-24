@@ -51,8 +51,13 @@ class Pool
 	void remove(Socket *); //!< Unregisters a proviously added socket
 	void clear();          //!< Unregisters all pool sockets
 
+	//! Returns whether the threaded read cycle is currently active
+	bool active() { return thread_.active(); }
+
 	//! Allows the pool to be used in a Mutex lock object
 	operator Mutex &() { return guard_; }
+	//! Returns whether the pool is operating as expected
+	operator bool();
 
 	Pool(const Pool &) = delete;
 	void operator =(const Pool &) = delete;

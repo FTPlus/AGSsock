@@ -28,9 +28,11 @@ class Test
 	Test(const char *description, Body body);
 
 	static bool run_tests();
+	static bool mark(const char *file, int line);
 };
 
-#define EXPECT(x) do { if (!(x)) return false; } while(false)
+#define EXPECT(x) do { if (!(x)) \
+	return Test::mark(__FILE__, __LINE__); } while(false)
 
 //------------------------------------------------------------------------------
 

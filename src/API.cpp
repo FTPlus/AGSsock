@@ -49,6 +49,11 @@ const char *AGSFormatError(int errnum)
 #endif
 }
 
+void AGSAbort(const char *msg)
+{
+	engine->AbortGame(msg);
+}
+
 //==============================================================================
 
 struct Thread::Data
@@ -85,7 +90,7 @@ struct Thread::Data
 			thread.func();
 		
 		pthread_exit(nullptr);
-
+		return nullptr;
 	}
 #endif
 };
@@ -225,7 +230,7 @@ Beacon::Beacon()
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addr.sin_port = 0;
 	
-	connect(data.fd, static_cast<sockaddr *> (&addr), sizeof (addr));
+	connect(data.fd, reinterpret_cast<sockaddr *> (&addr), sizeof (addr));
 #elif defined(_WIN32) && (IMPL_MODE == 2)
 	data.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	setblocking(data.fd, false);

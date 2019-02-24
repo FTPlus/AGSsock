@@ -126,19 +126,22 @@ struct AGS ## c : public IAGSScriptManagedObject,                               
 	virtual void Unserialize(int key, const char *serializedData, int dataSize); \
 } AGSMAIN ags ## c;
 
-//! Functions providing a platform independed API for the plugin
+//! Functions providing a platform independent API for the plugin
 namespace AGSSockAPI {
 	
 extern IAGSEngine *engine; //!< AGS' engine plugin interface
+
+
+//! Returns an AGS string containing an human-readable error message for a
+//! specific error code.
+const char *AGSFormatError(int errnum);
+//! Terminate AGS when an unrecoverable error has occurred.
+void AGSAbort(const char *msg);
 
 //------------------------------------------------------------------------------
 
 void Initialize(); //!< Initializes the API
 void Terminate();  //!< Cleans up the API
-
-//! Returns an AGS string containing an human-readable error message for a
-//! specific error code.
-const char *AGSFormatError(int errnum);
 
 //------------------------------------------------------------------------------
 

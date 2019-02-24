@@ -34,6 +34,13 @@ void Terminate()
 	pool = nullptr;
 }
 
+inline void CheckPoolInvariant()
+{
+	if (!*pool)
+		AGSAbort("The AGS Sockets plug-in has experienced an "
+			"unrecoverable failure: pool invariant violated.");
+}
+
 //==============================================================================
 
 int AGSSocket::Dispose(const char *ptr, bool force)
@@ -296,6 +303,7 @@ ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 		if (sock->remote != nullptr)
 			Socket_update_Remote(sock);
 		pool->add(sock);
+		CheckPoolInvariant();
 	}
 		
 	return (ret == SOCKET_ERROR ? 0 : 1);
@@ -330,6 +338,7 @@ Socket *Socket_Accept(Socket *sock)
 	
 	setblocking(conn, false);
 	pool->add(sock2);
+	CheckPoolInvariant();
 	
 	return sock2;
 }
@@ -582,16 +591,17 @@ SockData *Socket_RecvDataFrom(Socket *sock, SockAddr *addr)
 
 //==============================================================================
 
+// Unimplemented, there is probably no use for this
+
 ags_t Socket_GetOption(Socket *, ags_t level, ags_t option)
 {
-	return 0; // Todo: implement
+	return 0;
 }
 
 //------------------------------------------------------------------------------
 
 void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value)
 {
-	// Todo: implement
 }
 
 //------------------------------------------------------------------------------
