@@ -12,12 +12,9 @@
 #define MIN_EDITOR_VERSION 1
 #define MIN_ENGINE_VERSION 18
 
-#define WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-
-#if !defined(_WINDOWS_) && defined(_WIN32)
-#define _WINDOWS_
+#ifdef _WIN32
+	#define WIN32_LEAN_AND_MEAN
+	#include <windows.h>
 #endif
 
 #define AGSMAIN
@@ -37,6 +34,7 @@ using namespace AGSSock;
 
 // The standard Windows DLL entry point
 
+#ifdef _WIN32
 BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 {
 	switch(reason)
@@ -56,6 +54,7 @@ BOOL APIENTRY DllMain(HINSTANCE hInst, DWORD reason, LPVOID reserved)
 	
 	return TRUE;
 }
+#endif
 
 //==============================================================================
 
@@ -71,7 +70,7 @@ const char *ourScriptHeader = SOCKDATA_HEADER SOCKADDR_HEADER SOCKET_HEADER;
 
 //------------------------------------------------------------------------------
 
-LPCSTR AGS_GetPluginName()
+const char *AGS_GetPluginName()
 {
 	return ("Sockets for AGS");
 }
@@ -104,8 +103,12 @@ void AGS_EditorShutdown()
 
 void AGS_EditorProperties(HWND parent)
 {
+#ifdef _WIN32
 	MessageBox(parent, "AGS Sockets plugin by " AUTHORS "; " RELEASE_DATE_STRING
 		".", "About", MB_OK | MB_ICONINFORMATION);
+#else
+	// Todo: Figure out a way to do something similar on other systems
+#endif
 }
 
 /*

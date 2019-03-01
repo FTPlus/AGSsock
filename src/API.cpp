@@ -113,12 +113,12 @@ Thread::~Thread()
 		CloseHandle(data->handle);
 	#elif HAVE_TIMEDJOIN
 		timespec ts;
-		if (!clock_gettime(CLOCK_REALTIME, &ts))
+		if (clock_gettime(CLOCK_REALTIME, &ts))
 			pthread_cancel(data->thread);
 		else
 		{
 			ts.tv_sec += 2;
-			if (!pthread_timedjoin_np(data->thread, nullptr, &ts))
+			if (pthread_timedjoin_np(data->thread, nullptr, &ts))
 				pthread_cancel(data->thread);
 		}
 	#else
@@ -257,14 +257,15 @@ Beacon::~Beacon()
 
 void Beacon::reset()
 {
-	char buffer[8];
 #if defined(_WIN32) && (IMPL_MODE == 1)
+	char buffer[8];
 	while (recv(data.fd, buffer, sizeof (buffer), 0) > 0);
 #elif defined(_WIN32) && (IMPL_MODE == 2)
 	closesocket(data.fd);
 	data.fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	setblocking(data.fd, false);
 #else
+	char buffer[8];
 	while (read(data.fd[0], buffer, sizeof (buffer)) > 0);
 #endif
 }

@@ -11,7 +11,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "../src/Buffer.cpp"
+#include "Buffer.h"
 #include "Test.h"
 
 using namespace AGSSock;

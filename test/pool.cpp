@@ -11,14 +11,15 @@
 #include <algorithm>
 #include <iostream>
 
-#include "../src/Socket.h"
-#include "../src/Pool.cpp"
+#include "Socket.h"
+#include "Pool.h"
+#include "API.h"
 #include "Test.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 	#include <windows.h>
 	#define m_sleep(x) Sleep(x)
-#elif
+#else
 	#include <unistd.h>
 	#define m_sleep(x) usleep(x * 1000)
 #endif
@@ -27,6 +28,8 @@
 	if ((x) == SOCKET_ERROR) print_socket_error(); } while (false)
 
 using namespace AGSSock;
+
+using AGSSockAPI::Mutex;
 
 //------------------------------------------------------------------------------
 
@@ -78,7 +81,7 @@ bool create_udp_tunnel(Socket &from, Socket &to)
 		return false;
 	}
 
-	int addrlen = sizeof (addr);
+	ADDRLEN addrlen = sizeof (addr);
 	if (getsockname(to.id, (sockaddr *) &addr, &addrlen) == SOCKET_ERROR)
 	{
 		print_socket_error();
@@ -287,6 +290,7 @@ Test test4("pool read errors", []()
 		setblocking(sock_out.id, false);
 
 		pool.add(&sock_out);
+		EXPECT(pool);
 
 		char data[4] = {0x12, 0x34, 0x56, 0x78};
 		int ret = send(sock_in.id, data, sizeof (data), 0);
@@ -317,6 +321,8 @@ Test test4("pool read errors", []()
 		// closing the sockets should cause read errors
 		closesocket(sock_out.id);
 		closesocket(sock_in.id);
+		pool.add(&sock_out); // force the read cycle to be signalled
+		// Note: Windows signals the read cycle automatically when sockets close
 
 		// We expect the read error to be in the buffer eventually
 		for (int i = 0; i < 100; ++i)

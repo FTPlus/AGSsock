@@ -13,6 +13,7 @@ namespace AGSSock {
 using namespace AGSSockAPI;
 
 using std::string;
+using std::int32_t;
 
 //------------------------------------------------------------------------------
 
@@ -70,9 +71,9 @@ int AGSSocket::Dispose(const char *ptr, bool force)
 #pragma pack(push, 1)
 	struct AGSSocketSerial
 	{
-		std::int32_t domain, type, protocol;
-		std::int32_t error;
-		std::int32_t local, remote;
+		int32_t domain, type, protocol;
+		int32_t error;
+		int32_t local, remote;
 	};
 #pragma pack(pop)
 
@@ -86,8 +87,8 @@ int AGSSocket::Serialize(const char *ptr, char *buffer, int length)
 	Socket *sock = (Socket *) ptr;
 	AGSSocketSerial serial =
 	{
-		sock->domain, sock->type, sock->protocol,
-		sock->error,
+		(int32_t) sock->domain, (int32_t) sock->type, (int32_t) sock->protocol,
+		(int32_t) sock->error,
 		AGS_TO_KEY(sock->local), AGS_TO_KEY(sock->remote)
 	};
 	
@@ -204,7 +205,7 @@ void Socket_set_Tag(Socket *sock, const char *str)
 
 inline void Socket_update_Local(Socket *sock)
 {
-	int addrlen = ADDR_SIZE;
+	ADDRLEN addrlen = ADDR_SIZE;
 	getsockname(sock->id, ADDR(sock->local), &addrlen);
 }
 
@@ -227,7 +228,7 @@ SockAddr *Socket_get_Local(Socket *sock)
 
 inline void Socket_update_Remote(Socket *sock)
 {
-	int addrlen = ADDR_SIZE;
+	ADDRLEN addrlen = ADDR_SIZE;
 	getpeername(sock->id, ADDR(sock->remote), &addrlen);
 }
 
@@ -315,7 +316,7 @@ ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 Socket *Socket_Accept(Socket *sock)
 {
 	SockAddr addr;
-	int addrlen = ADDR_SIZE;
+	ADDRLEN addrlen = ADDR_SIZE;
 	
 	SOCKET conn = accept(sock->id, ADDR(&addr), &addrlen);
 	sock->error = GET_ERROR();
@@ -568,7 +569,7 @@ template <typename T> inline T *recvfrom_impl(Socket *sock, SockAddr *addr)
 	char buffer[65536];
 	buffer[sizeof (buffer) - 1] = 0;
 
-	int addrlen = ADDR_SIZE;
+	ADDRLEN addrlen = ADDR_SIZE;
 	long ret = recvfrom(sock->id, buffer, sizeof (buffer) - 1, 0,
 		ADDR(addr), &addrlen);
 	sock->error = GET_ERROR();

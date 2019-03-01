@@ -43,6 +43,7 @@
 	#define WOULD_BLOCK(x) ((x) == WSAEWOULDBLOCK)
 	#define ALREADY(x) ((x) == WSAEALREADY || (x) == WSAEINVAL || (x) == WSAEWOULDBLOCK)
 	#define GET_ERROR() WSAGetLastError()
+	#define ADDRLEN int
 #else
 	#include <fcntl.h>
 	#include <unistd.h>
@@ -52,11 +53,13 @@
 	#include <netdb.h>
 	#include <pthread.h>
 	#include <time.h>
+	#include <string.h>
 	
 	#define SOCKET int
 	#define SOCKET_ERROR -1
 	#define INVALID_SOCKET -1
 	#define SOCKADDR_STORAGE sockaddr_storage
+	#define ADDRLEN socklen_t
 	#define closesocket close
 	#define SD_RECEIVE SHUT_RD
 	#define SD_SEND SHUT_WR
