@@ -2,6 +2,7 @@
  * Test interface -- See header file for more information. *
  ***********************************************************/
 
+#include <exception>
 #include <iostream>
 #include <list>
 #include <utility>
@@ -39,8 +40,16 @@ bool Test::run_tests()
 	for (Test *test : Registry::getInstance().tests)
 	{
 		cout << "Testing: " << test->description << "... " << flush;
-		bool ret = test->body();
-		cout << (ret ? "Ok." : "FAILED!") << endl;
+		bool ret = false;
+		try
+		{
+			ret = test->body();
+			cout << (ret ? "Ok." : "FAILED!") << endl;
+		}
+		catch (std::exception &e)
+			{ cout << "FAILED!" << endl << '\t' << e.what() << endl; }
+		catch (...)
+			{ cout << "FAILED!\n\tAn undetermined exception occurred!" << endl; }
 		success &= ret;
 	}
 

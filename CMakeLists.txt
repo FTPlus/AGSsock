@@ -3,6 +3,16 @@ cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
 include(CheckLibraryExists)
 include(CheckTypeSize)
 
+# [Platform detection] used by the AGS plugin interface
+# Probably currently incomplete
+if(WIN32)
+	set(AGS_VERSION WINDOWS_VERSION)
+elseif(APPLE)
+	set(AGS_VERSION MAC_VERSION)
+elseif(UNIX)
+	set(AGS_VERSION LINUX_VERSION)
+endif()
+
 # [Version] Set-up plugin meta data
 project("AGS Sockets" VERSION 0.1.0.0
 	DESCRIPTION "Sockets plugin for Adventure Game Studio")
@@ -26,7 +36,7 @@ add_library(agssock-core STATIC
 	src/SockData.cpp
 	src/Pool.cpp
 )
-target_compile_definitions(agssock-core PUBLIC THIS_IS_THE_PLUGIN=1)
+target_compile_definitions(agssock-core PUBLIC THIS_IS_THE_PLUGIN=1 ${AGS_VERSION})
 target_include_directories(agssock-core PUBLIC ${CMAKE_BINARY_DIR}/res)
 target_link_libraries(agssock-core PUBLIC
 	$<$<PLATFORM_ID:Windows>:ws2_32>
@@ -35,16 +45,6 @@ target_link_libraries(agssock-core PUBLIC
 target_compile_features(agssock-core PUBLIC cxx_deleted_functions)
 # ... and more, I can't be bothered to name them all
 set_target_properties(agssock-core PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-# Platform detection used by the AGS plugin interface
-# Probably currently incomplete
-if(WIN32)
-	target_compile_definitions(agssock-core PUBLIC WINDOWS_VERSION)
-elseif(APPLE)
-	target_compile_definitions(agssock-core PUBLIC MAC_VERSION)
-elseif(UNIX)
-	target_compile_definitions(agssock-core PUBLIC LINUX_VERSION)
-endif()
 
 # [Plugin] Set-up the plugin itself
 add_library(agssock MODULE src/agsplugin.cpp res/agssock.rc)
@@ -79,14 +79,26 @@ endif()
 # [Tests]
 enable_testing()
 
-add_executable(test-buffer test/buffer.cpp test/Test.cpp)
+add_library(tester test/tester/Test.cpp)
+target_include_directories(tester PUBLIC test/tester)
+target_compile_features(tester PUBLIC cxx_generic_lambdas)
+
+add_library(agsmock
+	test/agsmock/agsmock.cpp
+	test/agsmock/engine.cpp
+	test/agsmock/Library.cpp
+)
+target_include_directories(agsmock PRIVATE src test/agsmock)
+target_link_libraries(agsmock PRIVATE $<$<NOT:$<PLATFORM_ID:Windows>>:dl>)
+target_compile_definitions(agsmock PUBLIC ${AGS_VERSION})
+target_compile_features(agsmock PUBLIC cxx_nullptr)
+
+add_executable(test-buffer test/buffer.cpp)
 target_include_directories(test-buffer PRIVATE src)
-target_link_libraries(test-buffer PRIVATE agssock-core)
-target_compile_features(test-buffer PRIVATE cxx_generic_lambdas)
+target_link_libraries(test-buffer PRIVATE tester agssock-core)
 add_test(Socket_buffer test-buffer)
 
-add_executable(test-pool test/pool.cpp test/Test.cpp)
+add_executable(test-pool test/pool.cpp)
 target_include_directories(test-pool PRIVATE src)
-target_link_libraries(test-pool PRIVATE agssock-core)
-target_compile_features(test-pool PRIVATE cxx_generic_lambdas)
+target_link_libraries(test-pool PRIVATE tester agssock-core)
 add_test(Socket_pool test-pool)
