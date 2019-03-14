@@ -76,7 +76,7 @@ if(HAVE_INTPTR_T)
 	endif()
 endif()
 
-# [Tests]
+# [Test interface]
 enable_testing()
 
 add_library(tester test/tester/Test.cpp)
@@ -93,6 +93,12 @@ target_link_libraries(agsmock PRIVATE $<$<NOT:$<PLATFORM_ID:Windows>>:dl>)
 target_compile_definitions(agsmock PUBLIC ${AGS_VERSION})
 target_compile_features(agsmock PUBLIC cxx_nullptr)
 
+if(MSVC)
+	target_compile_options(tester PUBLIC /MT$<$<CONFIG:Debug>:d> /wd4996)
+	target_compile_options(agsmock PUBLIC /MT$<$<CONFIG:Debug>:d> /wd4996)
+endif()
+
+# [Tests]
 add_executable(test-buffer test/buffer.cpp)
 target_include_directories(test-buffer PRIVATE src)
 target_link_libraries(test-buffer PRIVATE tester agssock-core)
@@ -102,3 +108,7 @@ add_executable(test-pool test/pool.cpp)
 target_include_directories(test-pool PRIVATE src)
 target_link_libraries(test-pool PRIVATE tester agssock-core)
 add_test(Socket_pool test-pool)
+
+add_executable(test-sockaddr test/sockaddr.cpp)
+target_link_libraries(test-sockaddr PRIVATE tester agsmock)
+add_test(SockAddr test-sockaddr)

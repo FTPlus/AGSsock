@@ -149,7 +149,7 @@ const char *SockAddr_get_Address(SockAddr *sa)
 	}
 	else
 	{
-		if (!serv[0])
+		if (!serv[0] || (serv[0] == '0' && !serv[1]))
 			addr = host;
 		else if (atof(serv) == 0.0) // A bit wonky but does the trick
 			addr = (std::string(serv) + "://") + host;
@@ -180,7 +180,7 @@ void SockAddr_set_Address(SockAddr *sa, const char *addr)
 		node.resize(index);
 	}
 	
-	addrinfo hint, *result;
+	addrinfo hint, *result = nullptr;
 	memset(&hint, 0, sizeof (addrinfo));
 	hint.ai_flags = AI_ADDRCONFIG | AI_V4MAPPED | (node.empty() ? AI_PASSIVE : 0);
 	hint.ai_family = sa->ss_family ? sa->ss_family : AF_UNSPEC;
@@ -193,26 +193,47 @@ void SockAddr_set_Address(SockAddr *sa, const char *addr)
 		// so the address string supplied is most likely invalid.
 	}
 	else if (result)
+	{
 		memcpy(sa, result->ai_addr, result->ai_addrlen);
-	
-	freeaddrinfo(result);
+		freeaddrinfo(result);
+	}
 }
 
 //------------------------------------------------------------------------------
 
 const char *SockAddr_get_IP(SockAddr *sa)
 {
-	char buffer[1024] = "";
-	inet_ntop(sa->ss_family, static_cast<const void *> (sa),
-		buffer, sizeof (buffer));
-	return AGS_STRING(buffer);
+	if (sa->ss_family == AF_INET)
+	{
+		char buffer[INET_ADDRSTRLEN] = "";
+		sockaddr_in *addr = reinterpret_cast<sockaddr_in *> (sa);
+		inet_ntop(sa->ss_family, &addr->sin_addr, buffer, sizeof (buffer));
+		return AGS_STRING(buffer);
+	}
+	else if (sa->ss_family == AF_INET6)
+	{
+		char buffer[INET6_ADDRSTRLEN] = "";
+		sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *> (sa);
+		inet_ntop(sa->ss_family, &addr->sin6_addr, buffer, sizeof (buffer));
+		return AGS_STRING(buffer);
+	}
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------
 
 void SockAddr_set_IP(SockAddr *sa, const char *ip)
 {
-	inet_pton(sa->ss_family, ip, static_cast<void *> (sa));
+	if (sa->ss_family == AF_INET)
+	{
+		sockaddr_in *addr = reinterpret_cast<sockaddr_in *> (sa);
+		inet_pton(sa->ss_family, ip, &addr->sin_addr);
+	}
+	else if (sa->ss_family == AF_INET6)
+	{
+		sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *> (sa);
+		inet_pton(sa->ss_family, ip, &addr->sin6_addr);
+	}
 }
 
 //------------------------------------------------------------------------------

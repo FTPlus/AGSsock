@@ -3,6 +3,7 @@
  *******************************************************/
 
 #include <cassert>
+#include <cstddef>
 #include <cstdlib>
 
 #include "API.h"
@@ -290,11 +291,29 @@ void Beacon::signal()
 
 //------------------------------------------------------------------------------
 
-#if (_WIN32_WINNT < 0x600)
+#if defined(_WIN32) && (_WIN32_WINNT < 0x600)
 
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
 {
-	if (getnameinfo(static_cast<const sockaddr *> (src),
+	SOCKADDR_STORAGE sa;
+	memset(&sa, 0, sizeof (SOCKADDR_STORAGE));
+
+	if (af == AF_INET)
+	{
+		sockaddr_in *addr = reinterpret_cast<sockaddr_in *> (&sa);
+		addr->sin_family = af;
+		memcpy(&addr->sin_addr, src, sizeof (in_addr));
+	}
+	else if (af = AF_INET6)
+	{
+		sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *> (&sa);
+		addr->sin6_family = af;
+		memcpy(&addr->sin6_addr, src, sizeof (in6_addr));
+	}
+	else
+		return nullptr;
+
+	if (getnameinfo(reinterpret_cast<const sockaddr *> (&sa),
 		sizeof (SOCKADDR_STORAGE), dst, size, nullptr, 0, NI_NUMERICHOST))
 		return nullptr;
 	else
@@ -305,36 +324,46 @@ const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
 
 int inet_pton(int af, const char *src, void *dst)
 {	
-	addrinfo hint, *result;
+	addrinfo hint, *result = nullptr;
 	memset(&hint, 0, sizeof (addrinfo));
 	hint.ai_flags = AI_ADDRCONFIG | AI_V4MAPPED | AI_NUMERICHOST;
 	hint.ai_family = af;
 	
 	if (getaddrinfo(src, nullptr, &hint, &result))
 		return 0;
-	else if (result)
+
+	if (result == nullptr)
+		return 0;
+
+	int ret = 0;
+	if (af == AF_INET)
 	{
-		if (af == AF_INET)
+		if (result->ai_addrlen >= sizeof (sockaddr_in))
 		{
-			u_short port = (static_cast<sockaddr_in *> (dst))->sin_port;
-			memcpy(dst, result->ai_addr, result->ai_addrlen);
-			(static_cast<sockaddr_in *> (dst))->sin_port = port;
+			sockaddr_in *addr = reinterpret_cast<sockaddr_in *>
+				(result->ai_addr);
+			memcpy(dst, &addr->sin_addr, sizeof (in_addr));
+			ret = 1;
 		}
-		else if (af == AF_INET6)
-		{
-			u_short port = (static_cast<sockaddr_in6 *> (dst))->sin6_port;
-			memcpy(dst, result->ai_addr, result->ai_addrlen);
-			(static_cast<sockaddr_in6 *> (dst))->sin6_port = port;
-		}
-		else
-			memcpy(dst, result->ai_addr, result->ai_addrlen);
 	}
+	else if (af == AF_INET6)
+	{
+		if (result->ai_addrlen >= sizeof (sockaddr_in6))
+		{
+			sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *>
+				(result->ai_addr);
+			memcpy(dst, &addr->sin6_addr, sizeof (in6_addr));
+			ret = 1;
+		}
+	}
+	else
+		ret = -1;
 	
 	freeaddrinfo(result);
-	return 1;
+	return ret;
 }
 
-#endif /* (_WIN32_WINNT < 0x600)*/
+#endif /* defined(_WIN32) && (_WIN32_WINNT < 0x600)*/
 
 //------------------------------------------------------------------------------
 

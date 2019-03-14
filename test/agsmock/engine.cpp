@@ -4,9 +4,9 @@
 
 #include <cstring>
 #include <iostream>
+#include <map>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 #include "engine.h"
 
@@ -14,7 +14,7 @@ namespace AGSMock {
 
 using std::string;
 using std::unordered_map;
-using std::vector;
+using std::map;
 
 //------------------------------------------------------------------------------
 
@@ -57,7 +57,6 @@ struct MockEngine::Data
 	unordered_map<string, IAGSManagedObjectReader *> readers;
 	unordered_map<string, void *> functions;
 	unordered_map<void *, Resource> objects;
-	vector<void *> object_list;
 
 	static int get_unique_key()
 	{
@@ -105,21 +104,27 @@ void MockEngine::free(void *object, bool force)
 
 void MockEngine::free_all()
 {
-	using namespace std;
+	map<int, void *> object_list;
+	for (auto &object : data_->objects)
+		object_list[object.second.key] = object.first;
 
-	for (void *object : data_->object_list)
-		free(object);
+	for (auto &object : object_list)
+		free(object.second);
 
 	if (data_->objects.size() > 0)
 	{
+		using namespace std;
 		cout << endl << "Warning: some resource persisted disposal." << endl;
 
-		for (void *object : data_->object_list)
-			free(object, true);
+		object_list.clear();
+		for (auto &object : data_->objects)
+			object_list[object.second.key] = object.first;
+
+		for (auto &object : object_list)
+			free(object.second, true);
 	}
 
 	data_->objects.clear();
-	data_->object_list.clear();
 }
 
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -138,7 +143,6 @@ int MockEngine::RegisterManagedObject(const void *object, IAGSScriptManagedObjec
 {
 	int key = Data::get_unique_key();
 	data_->objects[const_cast<void *> (object)] = {1, key, callback};
-	data_->object_list.push_back(const_cast<void *> (object));
 	return key;
 }
 
@@ -151,7 +155,6 @@ const char *MockEngine::CreateScriptString(const char *fromText)
 {
 	char *str = strdup(fromText);
 	data_->objects[(void *) str] = {1, 0, &ScriptString};
-	data_->object_list.push_back((void *) str);
 	return str;
 }
 
