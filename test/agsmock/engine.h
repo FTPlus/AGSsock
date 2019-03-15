@@ -49,6 +49,9 @@ class MockEngine : public IAGSEngine
 	AGSIFUNC(void) AddManagedObjectReader(const char *typeName, IAGSManagedObjectReader *reader);
 
 	AGSIFUNC(const char*) CreateScriptString(const char *fromText);
+
+	AGSIFUNC(int) IncrementManagedObjectRefCount(const char *address);
+	AGSIFUNC(int) DecrementManagedObjectRefCount(const char *address);
 };
 
 //------------------------------------------------------------------------------

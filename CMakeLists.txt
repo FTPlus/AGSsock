@@ -112,3 +112,8 @@ add_test(Socket_pool test-pool)
 add_executable(test-sockaddr test/sockaddr.cpp)
 target_link_libraries(test-sockaddr PRIVATE tester agsmock)
 add_test(SockAddr test-sockaddr)
+
+add_executable(test-socket test/socket.cpp)
+target_link_libraries(test-socket PRIVATE tester agsmock)
+add_test(Socket test-socket)
+

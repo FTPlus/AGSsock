@@ -154,8 +154,30 @@ void MockEngine::AddManagedObjectReader(const char *typeName, IAGSManagedObjectR
 const char *MockEngine::CreateScriptString(const char *fromText)
 {
 	char *str = strdup(fromText);
-	data_->objects[(void *) str] = {1, 0, &ScriptString};
+	data_->objects[(void *) str] = {1, Data::get_unique_key(), &ScriptString};
 	return str;
+}
+
+int MockEngine::IncrementManagedObjectRefCount(const char *address)
+{
+	if (data_->objects.count((void *) address) < 1)
+		return 0;
+
+	return ++data_->objects[(void *) address].count;
+}
+
+int MockEngine::DecrementManagedObjectRefCount(const char *address)
+{
+	if (data_->objects.count((void *) address) < 1)
+		return -1;
+
+	Data::Resource &res = data_->objects[(void *) address];
+	int count = --res.count;
+
+	if (count < 1)
+		free((void *) address, false);
+
+	return count;
 }
 
 //------------------------------------------------------------------------------

@@ -57,11 +57,17 @@ int AGSSocket::Dispose(const char *ptr, bool force)
 	}
 	
 	if (sock->local != nullptr)
+	{
 		AGS_RELEASE(sock->local);
+		sock->local = nullptr;
+	}
 	
 	if (sock->remote != nullptr)
+	{
 		AGS_RELEASE(sock->remote);
-		
+		sock->remote = nullptr;
+	}
+
 	delete sock;
 	return 1;
 }
@@ -262,6 +268,13 @@ ags_t Socket_Bind(Socket *sock, const SockAddr *addr)
 	sock->error = GET_ERROR();
 	if (sock->local != nullptr)
 		Socket_update_Local(sock);
+
+	// Faux connection UDP support
+	if (ret != SOCKET_ERROR && sock->protocol == IPPROTO_UDP)
+	{
+		pool->add(sock);
+		CheckPoolInvariant();
+	}
 	return ret == SOCKET_ERROR ? 0 : 1;
 }
 
@@ -306,7 +319,7 @@ ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 		pool->add(sock);
 		CheckPoolInvariant();
 	}
-		
+
 	return (ret == SOCKET_ERROR ? 0 : 1);
 }
 
@@ -366,6 +379,7 @@ void Socket_Close(Socket *sock)
 	}
 	
 	// Invalidate socket
+	pool->remove(sock);
 	closesocket(sock->id);
 	sock->id = INVALID_SOCKET;
 	sock->error = GET_ERROR();
