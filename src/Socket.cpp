@@ -149,8 +149,8 @@ Socket *Socket_Create(ags_t domain, ags_t type, ags_t protocol)
 	Socket *sock = new Socket
 	{
 		id,
-		domain, type, protocol,
-		error,
+		(int) domain, (int) type, (int) protocol,
+		(int) error,
 		nullptr, nullptr
 	};
 	AGS_OBJECT(Socket, sock);

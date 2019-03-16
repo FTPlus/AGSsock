@@ -59,7 +59,7 @@ Socket create_udp_socket()
 	{
 		id,
 		AF_INET, SOCK_DGRAM, IPPROTO_UDP,
-		error,
+		(int) error,
 		nullptr, nullptr,"",{}
 	};
 

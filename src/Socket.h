@@ -35,8 +35,8 @@ struct Socket
 {
 	// Exposed: <<<DO NOT CHANGE THE ORDER!!!>>>
 	SOCKET id;
-	ags_t domain, type, protocol;
-	ags_t error;
+	int domain, type, protocol;
+	int error;
 	
 	// Internal:
 	SockAddr *local, *remote;
