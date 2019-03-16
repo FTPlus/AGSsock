@@ -80,13 +80,13 @@ Test test2("local UDP connection", []()
 	// Set up a local connection between two UDP ports 
 	Handle<Socket> to = Call<Socket *>("Socket::CreateUDP^0");
 	Handle<Socket> from = Call<Socket *>("Socket::CreateUDP^0");
-	EXPECT(Call<ags_t>("Socket::get_Valid", to.get()));
-	EXPECT(Call<ags_t>("Socket::get_Valid", from.get()));
+	EXPECT(Call<ags_ret_t>("Socket::get_Valid", to.get()));
+	EXPECT(Call<ags_ret_t>("Socket::get_Valid", from.get()));
 
 	{
 		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateFromString^2",
 			"0.0.0.0", (ags_t) AF_INET);
-		ags_t ret = Call<ags_t>("Socket::Bind^1", to.get(), addr.get());
+		int ret = Call<ags_ret_t>("Socket::Bind^1", to.get(), addr.get());
 		REPORT(ret, to);
 		EXPECT(ret);
 	}
@@ -94,12 +94,12 @@ Test test2("local UDP connection", []()
 	{
 		Handle<SockAddr> addr1 = Call<SockAddr *>("Socket::get_Local",
 			to.get());
-		ags_t port = Call<ags_t>("SockAddr::get_Port", addr1.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr1.get());
 
 		Handle<SockAddr> addr2 = Call<SockAddr *>("SockAddr::CreateIP^2",
 			"127.0.0.1", port);
 
-		ags_t ret = Call<ags_t>("Socket::Connect^2", from.get(),
+		int ret = Call<ags_ret_t>("Socket::Connect^2", from.get(),
 			addr2.get(), (ags_t) 0);
 		REPORT(ret, from);
 		EXPECT(ret);
@@ -107,7 +107,7 @@ Test test2("local UDP connection", []()
 
 	// We send data from on to the other socket
 	{
-		ags_t ret = Call<ags_t>("Socket::Send^1", from.get(), "Test1234");
+		int ret = Call<ags_ret_t>("Socket::Send^1", from.get(), "Test1234");
 		REPORT(ret, from);
 		EXPECT(ret);
 	}
@@ -133,8 +133,8 @@ Test test2("local UDP connection", []()
 	// The sockets were closed, we expect them to become invalid eventually
 	for (int i = 0; i < 100; ++i)
 	{
-		ags_t valid1 = Call<ags_t>("Socket::get_Valid", to.get());
-		ags_t valid2 = Call<ags_t>("Socket::get_Valid", from.get());
+		int valid1 = Call<ags_ret_t>("Socket::get_Valid", to.get());
+		int valid2 = Call<ags_ret_t>("Socket::get_Valid", from.get());
 
 		if (!valid1 && !valid2)
 			break;
@@ -142,8 +142,8 @@ Test test2("local UDP connection", []()
 		m_sleep(10);
 	}
 	{
-		ags_t valid1 = Call<ags_t>("Socket::get_Valid", to.get());
-		ags_t valid2 = Call<ags_t>("Socket::get_Valid", from.get());
+		int valid1 = Call<ags_ret_t>("Socket::get_Valid", to.get());
+		int valid2 = Call<ags_ret_t>("Socket::get_Valid", from.get());
 		EXPECT(!valid1 && !valid2);
 	}
 
@@ -159,18 +159,18 @@ Test test3("local TCP connection", []()
 	cout << endl;
 
 	Handle<Socket> server = Call<Socket *>("Socket::CreateTCP^0");
-	EXPECT(Call<ags_t>("Socket::get_Valid", server.get()));
+	EXPECT(Call<ags_ret_t>("Socket::get_Valid", server.get()));
 
 	{
 		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateFromString^2",
 			"0.0.0.0:7200", (ags_t) AF_INET);
-		ags_t ret = Call<ags_t>("Socket::Bind^1", server.get(), addr.get());
+		int ret = Call<ags_ret_t>("Socket::Bind^1", server.get(), addr.get());
 		REPORT(ret, server);
 		EXPECT(ret);
 	}
 
 	{
-		ags_t ret = Call<ags_t>("Socket::Listen^1", server.get(), (ags_t) 10);
+		int ret = Call<ags_ret_t>("Socket::Listen^1", server.get(), (ags_t) 10);
 		REPORT(ret, server);
 		EXPECT(ret);
 	}
@@ -178,7 +178,7 @@ Test test3("local TCP connection", []()
 	Handle<SockAddr> serv_addr;
 	{
 		Handle<SockAddr> addr = Call<SockAddr *>("Socket::get_Local", &*server);
-		ags_t port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		serv_addr = Call<SockAddr *>("SockAddr::CreateIP^2", "127.0.0.1", port);
 	}
 
@@ -186,7 +186,7 @@ Test test3("local TCP connection", []()
 	EXPECT(Call<ags_t>("Socket::get_Valid", client.get()));
 
 	{
-		ags_t ret = Call<ags_t>("Socket::Connect^2", client.get(),
+		int ret = Call<ags_ret_t>("Socket::Connect^2", client.get(),
 			serv_addr.get(), (ags_t) 0);
 		REPORT(ret, client);
 		EXPECT(ret);
@@ -196,7 +196,7 @@ Test test3("local TCP connection", []()
 	EXPECT(!!conn);
 
 	{
-		ags_t ret = Call<ags_t>("Socket::Send^1", client.get(), "Test1234");
+		int ret = Call<ags_ret_t>("Socket::Send^1", client.get(), "Test1234");
 		REPORT(ret, client);
 		EXPECT(ret);
 	}
@@ -215,7 +215,7 @@ Test test3("local TCP connection", []()
 	}
 
 	{
-		ags_t ret = Call<ags_t>("Socket::Send^1", conn.get(), "12345678");
+		int ret = Call<ags_ret_t>("Socket::Send^1", conn.get(), "12345678");
 		REPORT(ret, conn);
 		EXPECT(ret);
 	}
@@ -244,7 +244,7 @@ Test test3("local TCP connection", []()
 		if (data)
 		{
 			EXPECT(string() == data.get());
-			EXPECT(!Call<ags_t>("Socket::get_Valid", conn.get()));
+			EXPECT(!Call<ags_ret_t>("Socket::get_Valid", conn.get()));
 			break;
 		}
 		m_sleep(10);
@@ -254,7 +254,7 @@ Test test3("local TCP connection", []()
 
 	{
 		Handle<Socket> client = Call<Socket *>("Socket::CreateTCP^0");
-		ags_t ret = Call<ags_t>("Socket::Connect^2", client.get(),
+		int ret = Call<ags_ret_t>("Socket::Connect^2", client.get(),
 			serv_addr.get(), (ags_t) 0);
 		EXPECT(!ret);
 	}

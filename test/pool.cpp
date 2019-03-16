@@ -53,7 +53,7 @@ void print_socket_error()
 Socket create_udp_socket()
 {
 	SOCKET id = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	ags_t error = GET_ERROR();
+	ags_ret_t error = GET_ERROR();
 
 	Socket sock
 	{

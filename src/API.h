@@ -114,6 +114,9 @@ typedef std::intptr_t ags_t;
 typedef long ags_t;
 #warning "The 'intptr_t' type is unavailable, resorting to 'long'. Alignment errors may occur in plugin function calls!"
 #endif
+// The return type of plugins has been set to 'int', we add a layer of
+// abstraction in case this is changed in the future.
+typedef int ags_ret_t;
 
 #ifndef AGSMAIN
 	#define AGSMAIN extern

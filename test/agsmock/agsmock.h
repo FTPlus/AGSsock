@@ -23,6 +23,7 @@ typedef std::intptr_t ags_t;
 #else
 typedef long ags_t;
 #endif
+typedef int ags_ret_t;
 
 //------------------------------------------------------------------------------
 

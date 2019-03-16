@@ -37,7 +37,7 @@ SockAddr *SockAddr_CreateFromData(const SockData *);
 SockAddr *SockAddr_CreateIP(const char *addr, ags_t port);
 SockAddr *SockAddr_CreateIPv6(const char *addr, ags_t port);
 
-ags_t SockAddr_get_Port(SockAddr *);
+ags_ret_t SockAddr_get_Port(SockAddr *);
 void SockAddr_set_Port(SockAddr *, ags_t);
 const char *SockAddr_get_Address(SockAddr *);
 void SockAddr_set_Address(SockAddr *, const char *);

@@ -69,11 +69,12 @@ if(NOT WIN32)
 endif()
 
 check_type_size("intptr_t" INTPTR_T)
+check_type_size("int" INT)
 if(HAVE_INTPTR_T)
 	add_definitions(-DHAVE_INTPTR_T)
-	if (NOT INTPTR_T EQUAL 4)
-		message("WARNING Target platform is probably not 32 bits; this may cause problems with aligment of the plugin functions. If the plugin crashes when used, check if building for 32 bits averts the problem.")
-	endif()
+endif()
+if (NOT INTPTR_T EQUAL INT)
+	message("WARNING AGS assumes the 'int' type to be the same with as pointers; this is not the case on the target platform. The plugin might not behave as intended due to allignment problems.")
 endif()
 
 # [Test interface]

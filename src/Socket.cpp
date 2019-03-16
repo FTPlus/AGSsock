@@ -188,7 +188,7 @@ Socket *Socket_CreateTCPv6()
 
 //==============================================================================
 
-ags_t Socket_get_Valid(Socket *sock)
+ags_ret_t Socket_get_Valid(Socket *sock)
 {
 	return (sock->id != INVALID_SOCKET ? 1 : 0);
 }
@@ -262,7 +262,7 @@ const char *Socket_ErrorString(Socket *sock)
 
 //==============================================================================
 
-ags_t Socket_Bind(Socket *sock, const SockAddr *addr)
+ags_ret_t Socket_Bind(Socket *sock, const SockAddr *addr)
 {
 	int ret = bind(sock->id, CONST_ADDR(addr), ADDR_SIZE);
 	sock->error = GET_ERROR();
@@ -280,7 +280,7 @@ ags_t Socket_Bind(Socket *sock, const SockAddr *addr)
 
 //------------------------------------------------------------------------------
 
-ags_t Socket_Listen(Socket *sock, ags_t backlog)
+ags_ret_t Socket_Listen(Socket *sock, ags_t backlog)
 {
 	if (backlog < 0)
 		backlog = SOMAXCONN;
@@ -294,7 +294,7 @@ ags_t Socket_Listen(Socket *sock, ags_t backlog)
 // by binding a remote address to the socket. We will complete this illusion by
 // adding the socket to the pool.
 
-ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
+ags_ret_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 {
 	int ret;
 	
@@ -390,7 +390,7 @@ void Socket_Close(Socket *sock)
 // Send is nonblocking:
 // If it returns 0 and the error is also 0: try again!
 
-inline ags_t send_impl(Socket *sock, const char *buf, size_t count)
+inline ags_ret_t send_impl(Socket *sock, const char *buf, size_t count)
 {
 	long ret = 0;
 	
@@ -410,19 +410,19 @@ inline ags_t send_impl(Socket *sock, const char *buf, size_t count)
 	return (ret == SOCKET_ERROR ? 0 : 1);
 }
 
-ags_t Socket_Send(Socket *sock, const char *str)
+ags_ret_t Socket_Send(Socket *sock, const char *str)
 {
 	return send_impl(sock, str, strlen(str));
 }
 
-ags_t Socket_SendData(Socket *sock, const SockData *data)
+ags_ret_t Socket_SendData(Socket *sock, const SockData *data)
 {
 	return send_impl(sock, data->data.data(), data->data.size());
 }
 
 //------------------------------------------------------------------------------
 
-inline ags_t sendto_impl(Socket *sock, const SockAddr *addr,
+inline ags_ret_t sendto_impl(Socket *sock, const SockAddr *addr,
 	const char *buf, size_t count)
 {
 	long ret = 0;
@@ -443,12 +443,12 @@ inline ags_t sendto_impl(Socket *sock, const SockAddr *addr,
 	return (ret == SOCKET_ERROR ? 0 : 1);
 }
 
-ags_t Socket_SendTo(Socket *sock, const SockAddr *addr, const char *str)
+ags_ret_t Socket_SendTo(Socket *sock, const SockAddr *addr, const char *str)
 {
 	return sendto_impl(sock, addr, str, strlen(str));
 }
 
-ags_t Socket_SendDataTo(Socket *sock, const SockAddr *addr, const SockData *data)
+ags_ret_t Socket_SendDataTo(Socket *sock, const SockAddr *addr, const SockData *data)
 {
 	return sendto_impl(sock, addr, data->data.data(), data->data.size());
 }
@@ -608,7 +608,7 @@ SockData *Socket_RecvDataFrom(Socket *sock, SockAddr *addr)
 
 // Unimplemented, there is probably no use for this
 
-ags_t Socket_GetOption(Socket *, ags_t level, ags_t option)
+ags_ret_t Socket_GetOption(Socket *, ags_t level, ags_t option)
 {
 	return 0;
 }

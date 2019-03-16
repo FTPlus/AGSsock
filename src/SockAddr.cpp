@@ -91,7 +91,7 @@ SockAddr *SockAddr_CreateIPv6(const char *ip, ags_t port)
 
 //------------------------------------------------------------------------------
 
-ags_t SockAddr_get_Port(SockAddr *sa)
+ags_ret_t SockAddr_get_Port(SockAddr *sa)
 {
 	if (sa->ss_family == AF_INET)
 	{

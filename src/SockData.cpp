@@ -59,7 +59,7 @@ SockData *SockData_CreateFromString(const char *str)
 
 //------------------------------------------------------------------------------
 
-ags_t SockData_get_Size(SockData *sd)
+ags_ret_t SockData_get_Size(SockData *sd)
 {
 	return sd->data.size();
 }
@@ -73,7 +73,7 @@ void SockData_set_Size(SockData *sd, ags_t size)
 
 //------------------------------------------------------------------------------
 
-ags_t SockData_geti_Chars(SockData *sd, ags_t index)
+ags_ret_t SockData_geti_Chars(SockData *sd, ags_t index)
 {
 	return sd->data[index];
 }

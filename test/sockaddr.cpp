@@ -50,7 +50,7 @@ Test test2("plain IPv4 addresses", []()
 		"127.0.0.1", (ags_t) 0x1234);
 
 	{
-		int port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		EXPECT(port == 0x1234);
 
 		Handle<const char> ip = Call<const char *>("SockAddr::get_IP", &*addr);
@@ -61,7 +61,7 @@ Test test2("plain IPv4 addresses", []()
 	Call<void>("SockAddr::set_IP", addr.get(), "12.34.56.78");
 
 	{
-		int port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		EXPECT(port == 0x5678);
 
 		Handle<const char> ip = Call<const char *>("SockAddr::get_IP",
@@ -82,7 +82,7 @@ Test test3("plain IPv6 addresses", []()
 		"::1", (ags_t) 0x1234);
 
 	{
-		int port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		EXPECT(port == 0x1234);
 
 		Handle<const char> ip = Call<const char *>("SockAddr::get_IP",
@@ -95,7 +95,7 @@ Test test3("plain IPv6 addresses", []()
 	Call<void>("SockAddr::set_IP", addr.get(), long_ip);
 
 	{
-		int port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		EXPECT(port == 0x5678);
 
 		Handle<const char> ip = Call<const char *>("SockAddr::get_IP",
@@ -116,7 +116,7 @@ Test test4("resolving addresses", []()
 		"http://localhost", (ags_t) AF_INET);
 
 	{
-		int port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		EXPECT(port == 80);
 
 		Handle<const char> ip = Call<const char *>("SockAddr::get_IP", &*addr);
@@ -126,7 +126,7 @@ Test test4("resolving addresses", []()
 	Call<void>("SockAddr::set_Address", addr.get(), "irc://localhost:6667");
 
 	{
-		int port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		EXPECT(port == 6667);
 
 		Handle<const char> ip = Call<const char *>("SockAddr::get_IP", &*addr);
@@ -148,7 +148,7 @@ Test test5("reverse resolving **internet access required**", []()
 	Call<void>("SockAddr::set_Address", addr.get(), "8.8.8.8:53");
 
 	{
-		int port = Call<ags_t>("SockAddr::get_Port", addr.get());
+		int port = Call<ags_ret_t>("SockAddr::get_Port", addr.get());
 		EXPECT(port == 53);
 
 		Handle<const char> ip = Call<const char *>("SockAddr::get_IP", &*addr);

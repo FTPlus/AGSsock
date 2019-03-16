@@ -54,29 +54,29 @@ Socket *Socket_CreateTCP();
 Socket *Socket_CreateUDPv6();
 Socket *Socket_CreateTCPv6();
 
-ags_t Socket_get_Valid(Socket *);
+ags_ret_t Socket_get_Valid(Socket *);
 const char *Socket_get_Tag(Socket *);
 void Socket_set_Tag(Socket *, const char *);
 SockAddr *Socket_get_Local(Socket *);
 SockAddr *Socket_get_Remote(Socket *);
 const char *Socket_ErrorString(Socket *);
 
-ags_t Socket_Bind(Socket *, const SockAddr *);
-ags_t Socket_Listen(Socket *, ags_t backlog);
-ags_t Socket_Connect(Socket *, const SockAddr *, ags_t async);
+ags_ret_t Socket_Bind(Socket *, const SockAddr *);
+ags_ret_t Socket_Listen(Socket *, ags_t backlog);
+ags_ret_t Socket_Connect(Socket *, const SockAddr *, ags_t async);
 Socket *Socket_Accept(Socket *);
 void Socket_Close(Socket *);
 
-ags_t Socket_Send(Socket *, const char *);
-ags_t Socket_SendData(Socket *, const SockData *);
-ags_t Socket_SendTo(Socket *, const SockAddr *, const char *);
-ags_t Socket_SendDataTo(Socket *, const SockAddr *, const SockData *);
+ags_ret_t Socket_Send(Socket *, const char *);
+ags_ret_t Socket_SendData(Socket *, const SockData *);
+ags_ret_t Socket_SendTo(Socket *, const SockAddr *, const char *);
+ags_ret_t Socket_SendDataTo(Socket *, const SockAddr *, const SockData *);
 const char *Socket_Recv(Socket *);
 SockData *Socket_RecvData(Socket *);
 const char *Socket_RecvFrom(Socket *, SockAddr *);
 SockData *Socket_RecvDataFrom(Socket *, SockAddr *);
 
-ags_t Socket_GetOption(Socket *, ags_t level, ags_t option);
+ags_ret_t Socket_GetOption(Socket *, ags_t level, ags_t option);
 void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 
 //------------------------------------------------------------------------------
