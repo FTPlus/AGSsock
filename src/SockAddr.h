@@ -55,8 +55,8 @@ SockData *SockAddr_GetData(SockAddr *);
 
 
 #define SOCKADDR_HEADER \
-	"#define IPv4 " STRINGIFY(AF_INET) "\r\n" \
-	"#define IPv6 " STRINGIFY(AF_INET6) "\r\n" \
+	"#define IPv4 -1\r\n" \
+	"#define IPv6 -2\r\n" \
 	"\r\n" \
 	"managed struct SockAddr\r\n" \
 	"{\r\n" \

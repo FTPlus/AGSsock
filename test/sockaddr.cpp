@@ -34,8 +34,7 @@ Test test1("loading the plugin", []()
 
 	LoadPlugin("agssock");
 
-	Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::Create^1",
-		(ags_t) AF_INET);
+	Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::Create^1", (ags_t) -1);
 
 	return true;
 });

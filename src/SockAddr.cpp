@@ -14,6 +14,16 @@ namespace AGSSock {
 
 //------------------------------------------------------------------------------
 
+void decode_type(ags_t &type)
+{
+	if (type == -1)
+		type = AF_INET;
+	else if (type == -2)
+		type = AF_INET6;
+}
+
+//------------------------------------------------------------------------------
+
 int AGSSockAddr::Dispose(const char *addr, bool force)
 {
 	delete (SockAddr *) addr;
@@ -43,6 +53,7 @@ void AGSSockAddr::Unserialize(int key, const char *buffer, int size)
 
 SockAddr *SockAddr_Create(ags_t type)
 {
+	decode_type(type);
 	SockAddr *addr = new SockAddr; // by design
 	AGS_OBJECT(SockAddr, addr);
 	memset(addr, 0, ADDR_SIZE);
@@ -54,6 +65,7 @@ SockAddr *SockAddr_Create(ags_t type)
 
 SockAddr *SockAddr_CreateFromString(const char *str, ags_t type)
 {
+	decode_type(type);
 	SockAddr *addr = SockAddr_Create(type);
 	SockAddr_set_Address(addr, str);
 	return addr;
