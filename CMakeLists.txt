@@ -16,7 +16,7 @@ endif()
 # [Version] Set-up plugin meta data
 project("AGS Sockets" VERSION 0.1.0.0
 	DESCRIPTION "Sockets plugin for Adventure Game Studio")
-set(PROJECT_VERSION_TAG "beta 1")
+set(PROJECT_VERSION_TAG "AACrc2")
 #set(PROJECT_VERSION_TAG "${PROJECT_VERSION}")
 set(PROJECT_AUTHOR "Ferry \\x22Wyz\\x22 Timmers")
 set(PROJECT_AUTHORS "${PROJECT_AUTHOR}")
