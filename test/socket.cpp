@@ -85,7 +85,7 @@ Test test2("local UDP connection", []()
 
 	{
 		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateFromString^2",
-			"0.0.0.0", (ags_t) AF_INET);
+			"0.0.0.0", (ags_t) -1);
 		ags_t ret = Call<ags_t>("Socket::Bind^1", to.get(), addr.get());
 		REPORT(ret, to);
 		EXPECT(ret);
@@ -163,7 +163,7 @@ Test test3("local TCP connection", []()
 
 	{
 		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateFromString^2",
-			"0.0.0.0:7200", (ags_t) AF_INET);
+			"0.0.0.0:7200", (ags_t) -1);
 		ags_t ret = Call<ags_t>("Socket::Bind^1", server.get(), addr.get());
 		REPORT(ret, server);
 		EXPECT(ret);

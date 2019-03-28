@@ -155,7 +155,7 @@ Test test5("reverse resolving **internet access required**", []()
 
 		Handle<const char> str = Call<const char *>("SockAddr::get_Address",
 			addr.get());
-		EXPECT(string("domain://google-public-dns-a.google.com") == str.get());
+		EXPECT(string("domain://dns.google") == str.get());
 	}
 
 	return true;

@@ -41,6 +41,7 @@ target_include_directories(agssock-core PUBLIC ${CMAKE_BINARY_DIR}/res)
 target_link_libraries(agssock-core PUBLIC
 	$<$<PLATFORM_ID:Windows>:ws2_32>
 	$<$<NOT:$<PLATFORM_ID:Windows>>:pthread>
+	$<$<PLATFORM_ID:Linux>:rt>
 )
 target_compile_features(agssock-core PUBLIC cxx_deleted_functions)
 # ... and more, I can't be bothered to name them all
