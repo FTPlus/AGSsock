@@ -34,7 +34,7 @@ int AGSSockAddr::Dispose(const char *addr, bool force)
 
 int AGSSockAddr::Serialize(const char *addr, char *buffer, int size)
 {
-	size = MIN(size, ADDR_SIZE);
+	size = MIN(size, sizeof (SockAddr));
 	memcpy(buffer, addr, size);
 	return size;
 }
@@ -43,7 +43,7 @@ int AGSSockAddr::Serialize(const char *addr, char *buffer, int size)
 
 void AGSSockAddr::Unserialize(int key, const char *buffer, int size)
 {
-	size = MIN(size, ADDR_SIZE);
+	size = MIN(size, sizeof (SockAddr));
 	SockAddr *addr = new SockAddr; // Default-intitalized by design
 	memcpy(addr, buffer, size);
 	AGS_RESTORE(SockAddr, addr, key);
@@ -56,7 +56,8 @@ SockAddr *SockAddr_Create(ags_t type)
 	decode_type(type);
 	SockAddr *addr = new SockAddr; // by design
 	AGS_OBJECT(SockAddr, addr);
-	memset(addr, 0, ADDR_SIZE);
+	memset(addr, 0, sizeof (SockAddr));
+	ADDR_INIT(addr, type); // update definition when new address types are added
 	addr->ss_family = type;
 	return addr;
 }
@@ -77,7 +78,7 @@ SockAddr *SockAddr_CreateFromData(const SockData *data)
 {
 	SockAddr *addr = new SockAddr; // by design
 	AGS_OBJECT(SockAddr, addr);
-	memcpy(addr, data->data.data(), MIN(data->data.size(), ADDR_SIZE));
+	memcpy(addr, data->data.data(), MIN(data->data.size(), sizeof (SockAddr)));
 	return addr;
 }
 
@@ -143,11 +144,11 @@ const char *SockAddr_get_Address(SockAddr *sa)
 	char host[NI_MAXHOST];
 	char serv[NI_MAXSERV];
 	
-	if (getnameinfo(ADDR(sa), ADDR_SIZE,
+	if (getnameinfo(ADDR(sa), ADDR_SIZE(sa),
 		host, sizeof (host), serv, sizeof (serv), 0))
 	{
 		// It failed: let's try without service names
-		if (getnameinfo(ADDR(sa), ADDR_SIZE,
+		if (getnameinfo(ADDR(sa), ADDR_SIZE(sa),
 			host, sizeof (host), NULL, 0, 0))
 		{
 			// Handle error:
@@ -197,18 +198,17 @@ void SockAddr_set_Address(SockAddr *sa, const char *addr)
 	hint.ai_flags = AI_ADDRCONFIG | AI_V4MAPPED | (node.empty() ? AI_PASSIVE : 0);
 	hint.ai_family = sa->ss_family ? sa->ss_family : AF_UNSPEC;
 	
-	if (getaddrinfo(node.c_str(), service.c_str(), &hint, &result))
+	if (getaddrinfo(node.c_str(), service.c_str(), &hint, &result) || !result)
 	{
 		// Handle error:
 		// We'll simply do nothing when address resolving failed;
 		// Users will figure out that the address object is empty,
 		// so the address string supplied is most likely invalid.
+		return;
 	}
-	else if (result)
-	{
-		memcpy(sa, result->ai_addr, result->ai_addrlen);
-		freeaddrinfo(result);
-	}
+
+	memcpy(sa, result->ai_addr, result->ai_addrlen);
+	freeaddrinfo(result);
 }
 
 //------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ SockData *SockAddr_GetData(SockAddr *sa)
 {
 	SockData *data = new SockData();
 	AGS_OBJECT(SockData, data);
-	data->data = std::string(reinterpret_cast<char *> (sa), ADDR_SIZE);
+	data->data = std::string(reinterpret_cast<char *> (sa), ADDR_SIZE(sa));
 	return data;
 }
 

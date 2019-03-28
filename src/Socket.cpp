@@ -211,7 +211,7 @@ void Socket_set_Tag(Socket *sock, const char *str)
 
 inline void Socket_update_Local(Socket *sock)
 {
-	ADDRLEN addrlen = ADDR_SIZE;
+	ADDRLEN addrlen = sizeof (SockAddr);
 	getsockname(sock->id, ADDR(sock->local), &addrlen);
 }
 
@@ -234,7 +234,7 @@ SockAddr *Socket_get_Local(Socket *sock)
 
 inline void Socket_update_Remote(Socket *sock)
 {
-	ADDRLEN addrlen = ADDR_SIZE;
+	ADDRLEN addrlen = sizeof (SockAddr);
 	getpeername(sock->id, ADDR(sock->remote), &addrlen);
 }
 
@@ -264,7 +264,7 @@ const char *Socket_ErrorString(Socket *sock)
 
 ags_t Socket_Bind(Socket *sock, const SockAddr *addr)
 {
-	int ret = bind(sock->id, CONST_ADDR(addr), ADDR_SIZE);
+	int ret = bind(sock->id, CONST_ADDR(addr), ADDR_SIZE(addr));
 	sock->error = GET_ERROR();
 	if (sock->local != nullptr)
 		Socket_update_Local(sock);
@@ -301,11 +301,11 @@ ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 	if (!async) // Sync mode: do a blocking connect
 	{
 		setblocking(sock->id, true);
-		ret = connect(sock->id, CONST_ADDR(addr), ADDR_SIZE);
+		ret = connect(sock->id, CONST_ADDR(addr), ADDR_SIZE(addr));
 		setblocking(sock->id, false);
 	}
 	else
-		ret = connect(sock->id, CONST_ADDR(addr), ADDR_SIZE);
+		ret = connect(sock->id, CONST_ADDR(addr), ADDR_SIZE(addr));
 	
 	// In async mode: returning false but with error == 0 is: try again
 	sock->error = GET_ERROR();
@@ -328,10 +328,10 @@ ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 // If it returns nullptr and the error is also 0: try again!
 Socket *Socket_Accept(Socket *sock)
 {
-	SockAddr addr;
-	ADDRLEN addrlen = ADDR_SIZE;
+	sockaddr addr;
+	ADDRLEN addrlen = sizeof (addr);
 	
-	SOCKET conn = accept(sock->id, ADDR(&addr), &addrlen);
+	SOCKET conn = accept(sock->id, &addr, &addrlen);
 	sock->error = GET_ERROR();
 	if (WOULD_BLOCK(sock->error))
 		sock->error = 0;
@@ -429,7 +429,7 @@ inline ags_t sendto_impl(Socket *sock, const SockAddr *addr,
 	
 	while (count > 0)
 	{
-		ret = sendto(sock->id, buf, count, 0, CONST_ADDR(addr), ADDR_SIZE);
+		ret = sendto(sock->id, buf, count, 0, CONST_ADDR(addr), ADDR_SIZE(addr));
 		if (ret == SOCKET_ERROR)
 			break;
 		buf += ret;
@@ -583,7 +583,7 @@ template <typename T> inline T *recvfrom_impl(Socket *sock, SockAddr *addr)
 	char buffer[65536];
 	buffer[sizeof (buffer) - 1] = 0;
 
-	ADDRLEN addrlen = ADDR_SIZE;
+	ADDRLEN addrlen = sizeof (SockAddr);
 	long ret = recvfrom(sock->id, buffer, sizeof (buffer) - 1, 0,
 		ADDR(addr), &addrlen);
 	sock->error = GET_ERROR();

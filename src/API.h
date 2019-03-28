@@ -44,7 +44,10 @@
 	#define ALREADY(x) ((x) == WSAEALREADY || (x) == WSAEINVAL || (x) == WSAEWOULDBLOCK)
 	#define GET_ERROR() WSAGetLastError()
 	#define ADDRLEN int
+	#define ADDR_SIZE(x) (sizeof (SOCKADDR_STORAGE))
+	#define ADDR_INIT(x, type) ((void) 0)
 #else
+	#include <errno.h>
 	#include <fcntl.h>
 	#include <unistd.h>
 	#include <sys/types.h>
@@ -60,6 +63,16 @@
 	#define INVALID_SOCKET -1
 	#define SOCKADDR_STORAGE sockaddr_storage
 	#define ADDRLEN socklen_t
+	#ifdef __APPLE__
+		#define ADDR_SIZE(x) (((sockaddr *) (x))->sa_len)
+		#define ADDR_INIT(x, type) (((sockaddr *) (x))->sa_len) = \
+			( (type) == AF_INET  ? sizeof (sockaddr_in)           \
+			: (type) == AF_INET6 ? sizeof (sockaddr_in6)          \
+			:                      sizeof (sockaddr_storage) )
+	#else
+		#define ADDR_SIZE(x) (sizeof (sockaddr_storage))
+		#define ADDR_INIT(x, type) ((void) 0)
+	#endif
 	#define closesocket close
 	#define SD_RECEIVE SHUT_RD
 	#define SD_SEND SHUT_WR
@@ -68,6 +81,9 @@
 	#define ALREADY(x) ((x) == EINPROGRESS || (x) == EALREADY)
 	#define GET_ERROR() errno
 #endif
+
+#define ADDR(x) (reinterpret_cast<sockaddr *> (x))
+#define CONST_ADDR(x) (reinterpret_cast<const sockaddr *> (x))
 
 int setblocking(SOCKET sock, bool state);
 
