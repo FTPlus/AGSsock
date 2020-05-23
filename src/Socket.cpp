@@ -100,15 +100,15 @@ int AGSSocket::Serialize(const char *ptr, char *buffer, int length)
 	
 	int size = MIN(length, sizeof (AGSSocketSerial));
 	memcpy(buffer, &serial, size);
-	return sock->tag.copy(buffer + size, length - size) + size;
+	return sock->tag.copy(buffer + size, (size_t) length - size) + size;
 }
 
 //------------------------------------------------------------------------------
 // Note: if unserialization happens in the wrong order we get a potential
 // memory leak: if the addresses are unserialized after the socket the socket
-// will get null references to them while the adresses are still in the pool 
+// will get null references to them while the addresses are still in the pool 
 // and are thus never released.
-// This needs to be tested someday eventhough saving sockets is generally a
+// This needs to be tested someday even though saving sockets is generally a
 // bad idea!!!
 
 void AGSSocket::Unserialize(int key, const char *buffer, int length)
@@ -119,7 +119,7 @@ void AGSSocket::Unserialize(int key, const char *buffer, int length)
 
 	string tag;
 	if (length - size > 0)
-		tag = string(buffer + size, length - size);
+		tag = string(buffer + size, (size_t) length - size);
 	
 	Socket *sock = new Socket
 	{
@@ -138,7 +138,7 @@ void AGSSocket::Unserialize(int key, const char *buffer, int length)
 
 Socket *Socket_Create(ags_t domain, ags_t type, ags_t protocol)
 {
-	RESET_ERROR(); // Bug: errno is sometimes not reset on linux
+	RESET_ERROR(); // Bug: errno is sometimes not reset on Linux
 	SOCKET id = socket(domain, type, protocol);
 	ags_t error = GET_ERROR();
 

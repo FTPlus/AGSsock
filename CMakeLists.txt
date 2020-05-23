@@ -27,6 +27,20 @@ set(PROJECT_RELEASE_MONTH 3)
 
 configure_file(res/version.h.in res/version.h)
 
+# [Options] Set-up global options
+if (CMAKE_COMPILER_IS_GNUCXX)
+	option(PROFILING "compiles binaries with profiling data enabled" OFF)
+	option(COVERAGE "compiles binaries with coverage data enabled" OFF)
+	if (PROFILING)
+		add_compile_options(-pg)
+		add_link_options(-pg)
+	endif()
+	if (COVERAGE)
+		add_compile_options(--coverage)
+		add_link_options(--coverage)
+	endif()
+endif()
+
 # [Core] Set-up the core elements of the plugin
 add_library(agssock-core STATIC
 	src/Socket.cpp
@@ -121,4 +135,3 @@ add_test(SockAddr test-sockaddr)
 add_executable(test-socket test/socket.cpp)
 target_link_libraries(test-socket PRIVATE tester agsmock)
 add_test(Socket test-socket)
-

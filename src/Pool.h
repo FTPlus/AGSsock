@@ -24,9 +24,9 @@ namespace AGSSock {
 
 //! Sockets pool
 
-//! Allows sockets to be registered to a pool for which the incomming data is
+//! Allows sockets to be registered to a pool for which the incoming data is
 //! processed by a threaded read cycle.
-//! \warning Lock the pool when using id, protocol or the incomming buffer of
+//! \warning Lock the pool when using id, protocol or the incoming buffer of
 //! a socket when it is registered to the pool to prevent race-conditions.
 class Pool
 {
@@ -36,7 +36,7 @@ class Pool
 	using Sockets = std::unordered_set<Socket *>;
 
 	// Note: the order ensures the destructors are called in the right order.
-	// Failing to do so may cause race-codnitions.
+	// Failing to do so may cause race-conditions.
 	Sockets sockets_; //!< The set of all registered sockets.
 	Mutex guard_;     //!< Guards the pool, pool signal and the incoming buffers
 	Beacon beacon_;   //!< Signals addition or removal of sockets in the pool
@@ -48,7 +48,7 @@ class Pool
 	Pool() : thread_([this]() { run(); }) {}
 
 	void add(Socket *);    //!< Registers a socket at the pool for processing
-	void remove(Socket *); //!< Unregisters a proviously added socket
+	void remove(Socket *); //!< Unregisters a previously added socket
 	void clear();          //!< Unregisters all pool sockets
 
 	//! Returns whether the threaded read cycle is currently active

@@ -21,7 +21,7 @@
 #include "version.h"
 
 //! A BSD sockets wrapper plugin for AGS
-//! \warning Assumes the API has succesfully been initialized.
+//! \warning Assumes the API has successfully been initialized.
 namespace AGSSock {
 
 //------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 	"{\r\n" \
 	"	/// Creates a socket for the specified protocol. (advanced)\r\n" \
 	"	import static Socket *Create(int domain, int type, int protocol = 0); // $AUTOCOMPLETEIGNORE$\r\n" \
-	"	/// Creates a UDP socket. (unrealiable, connectionless, message based)\r\n" \
+	"	/// Creates a UDP socket. (unreliable, connectionless, message based)\r\n" \
 	"	import static Socket *CreateUDP();           // $AUTOCOMPLETESTATICONLY$\r\n" \
 	"	/// Creates a TCP socket. (reliable, connection based, streaming)\r\n" \
 	"	import static Socket *CreateTCP();           // $AUTOCOMPLETESTATICONLY$\r\n" \
@@ -167,7 +167,7 @@ void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 	"	import bool SetOption(int level, int option, long value); // $AUTOCOMPLETEIGNORE$\r\n" \
 	"};\r\n"
 
-#define SOCKET_ENTRY	                         \
+#define SOCKET_ENTRY    	                     \
 	AGS_CLASS   (Socket)                         \
 	AGS_METHOD  (Socket, Create, 3)              \
 	AGS_METHOD  (Socket, CreateUDP, 0)           \

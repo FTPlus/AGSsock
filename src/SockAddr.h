@@ -76,7 +76,7 @@ SockData *SockAddr_GetData(SockAddr *);
 	"};\r\n" \
 	"\r\n"
 
-#define SOCKADDR_ENTRY	                         \
+#define SOCKADDR_ENTRY  	                     \
 	AGS_CLASS (SockAddr)                         \
 	AGS_METHOD(SockAddr, Create, 1)              \
 	AGS_METHOD(SockAddr, CreateFromString, 2)    \

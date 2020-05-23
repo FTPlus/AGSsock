@@ -61,7 +61,7 @@ Test test2("buffers with stream inputs", []()
 	buffer.append("\0\0", 2);
 	buffer.append(nullptr, 0);
 
-	// We expect the buffer to contain the concated data so far,
+	// We expect the buffer to contain the concatenated data so far,
 	// including null-characters.
 	EXPECT(buffer.front().size() == 15);
 	// But the first string read back should end at the first null-character

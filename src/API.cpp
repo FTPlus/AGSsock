@@ -13,7 +13,8 @@ namespace AGSSockAPI {
 IAGSEngine *engine = nullptr;
 
 #ifdef _WIN32
-	WSADATA wsa;
+WSADATA wsa;
+#pragma warning(disable:6258)
 #endif
 
 //------------------------------------------------------------------------------
@@ -22,6 +23,7 @@ void Initialize()
 {
 #ifdef _WIN32
 	WSAStartup(MAKEWORD(2, 2), &wsa);
+	// We do not handle failure here
 #endif
 }
 
@@ -151,7 +153,7 @@ struct Thread::Data
 	Data() : active(false), mutex() {}
 	
 #ifdef _WIN32
-	HANDLE handle;
+	HANDLE handle = nullptr;
 	
 	static DWORD WINAPI Function(LPVOID data)
 	{
@@ -295,7 +297,7 @@ void Thread::exit()
 			Pro: The resource only need to be created once.
 			Con: It can cause interfere with other UDP connections.
 			
-		2. Create and close a udp socket everytime.
+		2. Create and close a udp socket every time.
 			Pro: It does not interfere with other communication.
 			Con: It creates sockets many times.
 		
@@ -390,7 +392,7 @@ const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
 		addr->sin_family = af;
 		memcpy(&addr->sin_addr, src, sizeof (in_addr));
 	}
-	else if (af = AF_INET6)
+	else if (af == AF_INET6)
 	{
 		sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *> (&sa);
 		addr->sin6_family = af;

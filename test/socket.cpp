@@ -295,7 +295,7 @@ Test test4("error values", []()
 #ifdef __unix__
 		Handle<Socket> sock = Call<Socket *>("Socket::CreateTCP^0");
 		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
-		// Should fail when not root on unix based systems
+		// Should fail when not root on UNIX based systems
 		// Obviously the test fails when run as root, but then again, don't.
 		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateIP^2",
 			"0.0.0.0", (ags_t) 1);

@@ -44,7 +44,7 @@ int AGSSockAddr::Serialize(const char *addr, char *buffer, int size)
 void AGSSockAddr::Unserialize(int key, const char *buffer, int size)
 {
 	size = MIN(size, sizeof (SockAddr));
-	SockAddr *addr = new SockAddr; // Default-intitalized by design
+	SockAddr *addr = new SockAddr; // Default-initialized by design
 	memcpy(addr, buffer, size);
 	AGS_RESTORE(SockAddr, addr, key);
 }

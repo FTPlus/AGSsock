@@ -75,7 +75,7 @@ void SockData_Clear(SockData *);
 	"};\r\n" \
 	"\r\n"
 
-#define SOCKDATA_ENTRY	                         \
+#define SOCKDATA_ENTRY  	                     \
 	AGS_CLASS (SockData)                         \
 	AGS_METHOD(SockData, Create, 2)              \
 	AGS_METHOD(SockData, CreateEmpty, 0)         \

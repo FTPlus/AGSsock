@@ -65,7 +65,7 @@ class Buffer
 	}
 	
 	//! Removes the first zero-terminated string from the buffer.
-	//! \note Spurrious null-characters are also removed.
+	//! \note Spurious null-characters are also removed.
 	//! \warning The buffer should not be empty.
 	void extract();
 };

@@ -6,7 +6,7 @@
  * Date: 16:59 29-6-2012                               *
  *                                                     *
  * Description: Sets up various components the plugin  *
- *              uses in a platform independend way.    *
+ *              uses in a platform independent way.    *
  *******************************************************/
 
 #ifndef _API_H
