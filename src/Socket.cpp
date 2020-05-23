@@ -138,6 +138,7 @@ void AGSSocket::Unserialize(int key, const char *buffer, int length)
 
 Socket *Socket_Create(ags_t domain, ags_t type, ags_t protocol)
 {
+	RESET_ERROR(); // Bug: errno is sometimes not reset on linux
 	SOCKET id = socket(domain, type, protocol);
 	ags_t error = GET_ERROR();
 
@@ -251,6 +252,13 @@ SockAddr *Socket_get_Remote(Socket *sock)
 		sock->error = GET_ERROR();
 	}
 	return sock->remote;
+}
+
+//------------------------------------------------------------------------------
+
+ags_t Socket_ErrorValue(Socket *sock)
+{
+	return AGSEnumerateError(sock->error);
 }
 
 //------------------------------------------------------------------------------

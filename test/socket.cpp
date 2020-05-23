@@ -21,6 +21,7 @@
 #else
 	#include <sys/socket.h>
 	#include <unistd.h>
+	#include <signal.h>
 	#define m_sleep(x) usleep(x * 1000)
 #endif
 
@@ -37,6 +38,21 @@ struct Socket
 };
 struct SockAddr {};
 struct SockData {};
+
+// Error constant values returned by AGSEnumerateError, copy from API.h
+#define AGSSOCK_NO_ERROR               0
+#define AGSSOCK_OTHER_ERROR            1
+#define AGSSOCK_ACCESS_DENIED          2
+#define AGSSOCK_ADDRESS_NOT_AVAILABLE  3
+#define AGSSOCK_PLEASE_TRY_AGAIN       4
+#define AGSSOCK_SOCKET_NOT_VALID       5
+#define AGSSOCK_DISCONNECTED           6
+#define AGSSOCK_INVALID                7
+#define AGSSOCK_UNSUPPORTED            8
+#define AGSSOCK_HOST_NOT_REACHED       9
+#define AGSSOCK_NOT_ENOUGH_RESOURCES  10
+#define AGSSOCK_NETWORK_NOT_AVAILABLE 11
+#define AGSSOCK_NOT_CONNECTED         12
 
 //------------------------------------------------------------------------------
 
@@ -163,7 +179,7 @@ Test test3("local TCP connection", []()
 
 	{
 		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateFromString^2",
-			"0.0.0.0:7200", (ags_t) -1);
+			"0.0.0.0:8024", (ags_t) -1);
 		ags_t ret = Call<ags_t>("Socket::Bind^1", server.get(), addr.get());
 		REPORT(ret, server);
 		EXPECT(ret);
@@ -257,6 +273,125 @@ Test test3("local TCP connection", []()
 		ags_t ret = Call<ags_t>("Socket::Connect^2", client.get(),
 			serv_addr.get(), (ags_t) 0);
 		EXPECT(!ret);
+	}
+
+	return true;
+});
+
+//------------------------------------------------------------------------------
+
+Test test4("error values", []()
+{
+	using namespace AGSMock;
+
+	{
+		Handle<Socket> sock = Call<Socket *>("Socket::CreateTCP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock.get());
+		EXPECT(error == AGSSOCK_NO_ERROR);
+	}
+
+	{
+#ifdef __unix__
+		Handle<Socket> sock = Call<Socket *>("Socket::CreateTCP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
+		// Should fail when not root on unix based systems
+		// Obviously the test fails when run as root, but then again, don't.
+		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 1);
+		Call<ags_t>("Socket::Bind^1", sock.get(), addr.get());
+#else
+		Handle<Socket> sock = Call<Socket *>("Socket::CreateUDP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
+		Handle<SockAddr> addr = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"255.255.255.255", (ags_t) 0);
+		Call<ags_t>("Socket::SendTo^2", sock.get(), addr.get(), "Test1234");
+#endif
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock.get());
+		EXPECT(error == AGSSOCK_ACCESS_DENIED);
+	}
+
+	{
+		Handle<SockAddr> addr1 = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 8024);
+		Handle<SockAddr> addr2 = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 8024);
+		Handle<Socket> sock1 = Call<Socket *>("Socket::CreateTCP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock1.get()));
+		Call<ags_t>("Socket::Bind^1", sock1.get(), addr1.get());
+		Handle<Socket> sock2 = Call<Socket *>("Socket::CreateTCP^0");
+		Call<ags_t>("Socket::Bind^1", sock2.get(), addr2.get());
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock2.get()));
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock2.get());
+		EXPECT(error == AGSSOCK_ADDRESS_NOT_AVAILABLE);
+	}
+
+	{
+		Handle<SockAddr> addr1 = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 0);
+		Handle<SockAddr> addr2 = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 8024);
+		Handle<Socket> sock = Call<Socket *>("Socket::CreateUDP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
+		Call<ags_t>("Socket::Bind^1", sock.get(), addr1.get());
+		Call<SockData *>("Socket::RecvDataFrom^1", sock.get(), addr2.get());
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock.get());
+		EXPECT(error == AGSSOCK_PLEASE_TRY_AGAIN);
+	}
+
+	{
+		Handle<SockAddr> addr1 = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 0);
+		Handle<Socket> sock = Call<Socket *>("Socket::Create^3", 1, 2, 3);
+		Call<ags_t>("Socket::Bind^1", sock.get(), addr1.get());
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock.get());
+		EXPECT(error == AGSSOCK_SOCKET_NOT_VALID);
+		EXPECT(!Call<ags_t>("Socket::get_Valid", sock.get()));
+	}
+
+	// AGSSOCK_DISCONNECTED: difficult to test a connection reset
+
+	{
+		Handle<SockAddr> addr1 = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 0);
+		Handle<SockAddr> addr2 = Call<SockAddr *>("SockAddr::CreateIP^2",
+			"0.0.0.0", (ags_t) 0);
+		Handle<Socket> sock = Call<Socket *>("Socket::CreateTCP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
+		Call<ags_t>("Socket::Bind^1", sock.get(), addr1.get());
+		Call<ags_t>("Socket::Bind^1", sock.get(), addr2.get());
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock.get());
+		EXPECT(error == AGSSOCK_INVALID);
+	}
+
+	{
+		Handle<Socket> sock = Call<Socket *>("Socket::CreateUDP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
+		Handle<Socket> conn = Call<Socket *>("Socket::Accept^0", sock.get());
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock.get());
+		EXPECT(error == AGSSOCK_UNSUPPORTED);
+	}
+
+	// Not tested:
+	// AGSSOCK_HOST_NOT_REACHED
+	// AGSSOCK_NOT_ENOUGH_RESOURCES
+	// AGSSOCK_NETWORK_NOT_AVAILABLE
+
+	{
+#ifdef __unix__
+		// Temporarily disable the SIGPIPE signal
+		const struct sigaction ignore_handler{SIG_IGN};
+		struct sigaction default_handler;
+		sigaction(SIGPIPE, &ignore_handler, &default_handler);
+#endif
+		Handle<Socket> sock = Call<Socket *>("Socket::CreateTCP^0");
+		EXPECT(Call<ags_t>("Socket::get_Valid", sock.get()));
+		Call<ags_t>("Socket::Send^1", sock.get(), "Test1234");
+		ags_t error = Call<ags_t>("Socket::ErrorValue^0", sock.get());
+		EXPECT(error == AGSSOCK_NOT_CONNECTED);
+#ifdef __unix__
+		sigaction(SIGPIPE, &default_handler, nullptr);
+#endif
 	}
 
 	return true;

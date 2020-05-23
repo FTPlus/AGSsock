@@ -31,6 +31,7 @@
 	#endif
 	
 	#if (_WIN32_WINNT < 0x600)
+		#undef _WIN32_WINNT
 		#define _WIN32_WINNT 0x0501
 		const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 		int inet_pton(int af, const char *src, void *dst);
@@ -43,6 +44,7 @@
 	#define WOULD_BLOCK(x) ((x) == WSAEWOULDBLOCK)
 	#define ALREADY(x) ((x) == WSAEALREADY || (x) == WSAEINVAL || (x) == WSAEWOULDBLOCK)
 	#define GET_ERROR() WSAGetLastError()
+	#define RESET_ERROR()
 	#define ADDRLEN int
 	#define ADDR_SIZE(x) (sizeof (SOCKADDR_STORAGE))
 	#define ADDR_INIT(x, type) ((void) 0)
@@ -80,6 +82,7 @@
 	#define WOULD_BLOCK(x) ((x) == EAGAIN || (x) == EWOULDBLOCK)
 	#define ALREADY(x) ((x) == EINPROGRESS || (x) == EALREADY)
 	#define GET_ERROR() errno
+	#define RESET_ERROR() do {errno = 0;} while (0)
 #endif
 
 #define ADDR(x) (reinterpret_cast<sockaddr *> (x))
@@ -147,10 +150,27 @@ struct AGS ## c : public IAGSScriptManagedObject,                               
 
 //! Functions providing a platform independent API for the plugin
 namespace AGSSockAPI {
-	
+
+// Error constant values returned by AGSEnumerateError
+#define AGSSOCK_NO_ERROR               0
+#define AGSSOCK_OTHER_ERROR            1
+#define AGSSOCK_ACCESS_DENIED          2
+#define AGSSOCK_ADDRESS_NOT_AVAILABLE  3
+#define AGSSOCK_PLEASE_TRY_AGAIN       4
+#define AGSSOCK_SOCKET_NOT_VALID       5
+#define AGSSOCK_DISCONNECTED           6
+#define AGSSOCK_INVALID                7
+#define AGSSOCK_UNSUPPORTED            8
+#define AGSSOCK_HOST_NOT_REACHED       9
+#define AGSSOCK_NOT_ENOUGH_RESOURCES  10
+#define AGSSOCK_NETWORK_NOT_AVAILABLE 11
+#define AGSSOCK_NOT_CONNECTED         12
+
 extern IAGSEngine *engine; //!< AGS' engine plugin interface
 
-
+//! Returns a numeric value corresponding to the SockError enumeration for a
+//! specific error code.
+ags_t AGSEnumerateError(int errnum);
 //! Returns an AGS string containing an human-readable error message for a
 //! specific error code.
 const char *AGSFormatError(int errnum);

@@ -59,6 +59,7 @@ const char *Socket_get_Tag(Socket *);
 void Socket_set_Tag(Socket *, const char *);
 SockAddr *Socket_get_Local(Socket *);
 SockAddr *Socket_get_Remote(Socket *);
+ags_t Socket_ErrorValue(Socket *sock);
 const char *Socket_ErrorString(Socket *);
 
 ags_t Socket_Bind(Socket *, const SockAddr *);
@@ -87,6 +88,22 @@ void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 
 #define SOCKET_HEADER \
 	"#define AGSSOCK " RELEASE_DATE "\r\n\r\n" \
+	"enum SockError\r\n" \
+	"{\r\n" \
+	"	eSockNoError             = " STRINGIFY(AGSSOCK_NO_ERROR) ",\r\n" \
+	"	eSockOtherError          = " STRINGIFY(AGSSOCK_OTHER_ERROR) ",\r\n" \
+	"	eSockAccessDenied        = " STRINGIFY(AGSSOCK_ACCESS_DENIED) ",\r\n" \
+	"	eSockAddressNotAvailable = " STRINGIFY(AGSSOCK_ADDRESS_NOT_AVAILABLE) ",\r\n" \
+	"	eSockPleaseTryAgain      = " STRINGIFY(AGSSOCK_PLEASE_TRY_AGAIN) ",\r\n" \
+	"	eSockSocketNotValid      = " STRINGIFY(AGSSOCK_SOCKET_NOT_VALID) ",\r\n" \
+	"	eSockDisconnected        = " STRINGIFY(AGSSOCK_DISCONNECTED) ",\r\n" \
+	"	eSockInvalid             = " STRINGIFY(AGSSOCK_INVALID) ",\r\n" \
+	"	eSockUnsupported         = " STRINGIFY(AGSSOCK_UNSUPPORTED) ",\r\n" \
+	"	eSockHostNotReached      = " STRINGIFY(AGSSOCK_HOST_NOT_REACHED) ",\r\n" \
+	"	eSockNotEnoughResources  = " STRINGIFY(AGSSOCK_NOT_ENOUGH_RESOURCES) ",\r\n" \
+	"	eSockNetworkNotAvailable = " STRINGIFY(AGSSOCK_NETWORK_NOT_AVAILABLE) ",\r\n" \
+	"	eSockNotConnected        = " STRINGIFY(AGSSOCK_NOT_CONNECTED) "\r\n" \
+	"};\r\n\r\n" \
 	"managed struct Socket\r\n" \
 	"{\r\n" \
 	"	/// Creates a socket for the specified protocol. (advanced)\r\n" \
@@ -111,6 +128,8 @@ void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 	"	readonly import attribute SockAddr *Remote;\r\n" \
 	"	readonly import attribute bool Valid;\r\n" \
 	"	\r\n" \
+	"	/// Returns the last error observed from this socket as an enumerated value.\r\n" \
+	"	import SockError ErrorValue();\r\n" \
 	"	/// Returns the last error observed from this socket as an human readable string.\r\n" \
 	"	import String ErrorString();\r\n" \
 	"	/// Binds the socket to a local address. (generally used  before listening)\r\n" \
@@ -159,6 +178,7 @@ void Socket_SetOption(Socket *, ags_t level, ags_t option, ags_t value);
 	AGS_READONLY(Socket, Local)                  \
 	AGS_READONLY(Socket, Remote)                 \
 	AGS_READONLY(Socket, Valid)                  \
+	AGS_METHOD  (Socket, ErrorValue, 0)          \
 	AGS_METHOD  (Socket, ErrorString, 0)         \
 	AGS_METHOD  (Socket, Bind, 1)                \
 	AGS_METHOD  (Socket, Listen, 1)              \

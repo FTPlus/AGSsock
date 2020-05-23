@@ -36,6 +36,92 @@ void Terminate()
 
 //------------------------------------------------------------------------------
 
+/*
+ACCES, PERM:                                      AccessDenied
+ADDRINUSE, ADDRNOTAVAIL, AFNOSUPPORT:             AddressNotAvailable
+AGAIN, WOULDBLOCK, ALREADY, INPROGRESS, INTR:     PleaseTryAgain
+BADF, NOTSOCK:                                    SocketNotValid
+CONNABORTED, CONNREFUSED, CONNRESET, NETRESET:    Disconnected
+DESTADDRREQ, INVAL, PROTOTYPE, FAULT, ISCONN:     Invalid
+OPNOTSUPP, PROTO, PROTONOSUPPORT, SOCKTNOSUPPORT: Unsupported
+HOSTUNREACH:                                      HostUnreachable
+MFILE, NFILE, NOBUFS, NOMEM:                      NotEnoughResources
+NETDOWN, NETUNREACH:                              NetworkUnreachable
+NOTCONN, PIPE, SHUTDOWN, TIMEDOUT:                NotConnected
+*/
+
+#ifdef _WIN32
+	#define ERR(x) WSAE ## x
+	#define NOT_WIN(x)
+#else
+	#define ERR(x) E ## x
+	#define NOT_WIN(x) x
+#endif
+
+ags_t AGSEnumerateError(int errnum)
+{
+	switch (errnum)
+	{
+		case 0:
+		                          return AGSSOCK_NO_ERROR;
+		case ERR(ACCES):
+		NOT_WIN(case ERR(PERM):)
+		                          return AGSSOCK_ACCESS_DENIED;
+		case ERR(ADDRINUSE):
+		case ERR(ADDRNOTAVAIL):
+		case ERR(AFNOSUPPORT):
+		                          return AGSSOCK_ADDRESS_NOT_AVAILABLE;
+#ifndef _WIN32
+	#if EAGAIN != EWOULDBLOCK
+		case EAGAIN:
+	#endif
+#endif
+		case ERR(WOULDBLOCK):
+		case ERR(ALREADY):
+		case ERR(INPROGRESS):
+		case ERR(INTR):
+		                          return AGSSOCK_PLEASE_TRY_AGAIN;
+		case ERR(BADF):
+		case ERR(NOTSOCK):
+		                          return AGSSOCK_SOCKET_NOT_VALID;
+		case ERR(CONNABORTED):
+		case ERR(CONNREFUSED):
+		case ERR(CONNRESET):
+		case ERR(NETRESET):
+		                          return AGSSOCK_DISCONNECTED;
+		case ERR(DESTADDRREQ):
+		case ERR(INVAL):
+		case ERR(PROTOTYPE):
+		case ERR(FAULT):
+		case ERR(ISCONN):
+		                          return AGSSOCK_INVALID;
+		case ERR(OPNOTSUPP):
+		NOT_WIN(case ERR(PROTO):)
+		case ERR(PROTONOSUPPORT):
+		case ERR(SOCKTNOSUPPORT):
+		                          return AGSSOCK_UNSUPPORTED;
+		case ERR(HOSTUNREACH):
+		                          return AGSSOCK_HOST_NOT_REACHED;
+		case ERR(MFILE):
+		NOT_WIN(case ERR(NFILE):)
+		case ERR(NOBUFS):
+		NOT_WIN(case ERR(NOMEM):)
+		                          return AGSSOCK_NOT_ENOUGH_RESOURCES;
+		case ERR(NETDOWN):
+		case ERR(NETUNREACH):
+		                          return AGSSOCK_NETWORK_NOT_AVAILABLE;
+		case ERR(NOTCONN):
+		NOT_WIN(case ERR(PIPE):)
+		case ERR(SHUTDOWN):
+		case ERR(TIMEDOUT):
+		                          return AGSSOCK_NOT_CONNECTED;
+		default:
+		                          return AGSSOCK_OTHER_ERROR;
+	}
+}
+
+//------------------------------------------------------------------------------
+
 const char *AGSFormatError(int errnum)
 {
 #ifdef _WIN32
