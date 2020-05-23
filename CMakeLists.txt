@@ -22,8 +22,8 @@ set(PROJECT_AUTHOR "Ferry \\x22Wyz\\x22 Timmers")
 set(PROJECT_AUTHORS "${PROJECT_AUTHOR}")
 #set(PROJECT_AUTHORS "${PROJECT_AUTHOR} and ...")
 set(PROJECT)
-set(PROJECT_RELEASE_YEAR 2019)
-set(PROJECT_RELEASE_MONTH 3)
+set(PROJECT_RELEASE_YEAR 2020)
+set(PROJECT_RELEASE_MONTH 5)
 
 configure_file(res/version.h.in res/version.h)
 
