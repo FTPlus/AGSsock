@@ -62,7 +62,12 @@ target_compile_features(agssock-core PUBLIC cxx_deleted_functions)
 set_target_properties(agssock-core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # [Plugin] Set-up the plugin itself
-add_library(agssock MODULE src/agsplugin.cpp res/agssock.rc)
+set(AGSSOCK_SOURCES src/agsplugin.cpp res/agssock.rc)
+if(APPLE)
+	add_library(agssock SHARED ${AGSSOCK_SOURCES})
+else()
+	add_library(agssock MODULE ${AGSSOCK_SOURCES})
+endif()
 target_link_libraries(agssock PRIVATE agssock-core)
 
 # Platform specific set-up
