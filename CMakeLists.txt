@@ -71,6 +71,11 @@ if(MSVC)
 	target_compile_options(agssock-core PUBLIC /MT$<$<CONFIG:Debug>:d> /wd4996)
 endif()
 
+if(APPLE)
+	# The MacOS version of AGS expects plugins to have the .dylib extension
+	set_target_properties(agssock PROPERTIES SUFFIX ".dylib")
+endif()
+
 if(MINGW OR MSYS)
 	# Remove lib- prefix when compiling with MinGW
 	set_target_properties(agssock PROPERTIES PREFIX "")

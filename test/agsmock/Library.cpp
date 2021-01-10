@@ -18,6 +18,8 @@ namespace AGSMock {
 Library::Library(const char *name)
 #ifdef _WIN32
 	: handle((void *) LoadLibrary(name))
+#elif defined(__APPLE__)
+	: handle(dlopen((std::string("./lib") + name + ".dylib").c_str(), RTLD_LAZY))
 #else
 	: handle(dlopen((std::string("./lib") + name + ".so").c_str(), RTLD_LAZY))
 #endif
