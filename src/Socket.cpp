@@ -319,6 +319,15 @@ ags_t Socket_Connect(Socket *sock, const SockAddr *addr, ags_t async)
 	sock->error = GET_ERROR();
 	if (ALREADY(sock->error)) // If already trying to connect
 		sock->error = 0;
+
+#ifdef _WIN32
+	// Windows might err with 'already connected' when the connection actually succeeded
+	if (ret == SOCKET_ERROR && sock->error == WSAEISCONN)
+	{
+		ret = SOCKET_ERROR != 0 ? 0 : 1;
+		sock->error = 0;
+	}
+#endif
 	
 	if (ret != SOCKET_ERROR)
 	{
